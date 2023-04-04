@@ -33,14 +33,14 @@ pub fn get_stored_paths() -> Result<Vec<String>, ()> {
 
 // Initiate Delta - on selected paths
 #[tauri::command]
-pub async fn initiate_delta(images: Vec<String>, directoryName: String) -> Result<Response, ErrorResponse> {
+pub async fn initiate_delta(images: Vec<String>, directory_name: String) -> Result<Response, ErrorResponse> {
   // let id = Uuid::new_v4();
   let date = Local::now().format("%Y-%m-%d-%H-%M-%S");
   let base_path = format!("output/{date}");
 
   fs::create_dir_all(base_path.clone()).unwrap();
 
-  let res = delta::delta_images(base_path,images, directoryName).await;
+  let res = delta::delta_images(base_path,images, directory_name).await;
 
   Ok(Response { data: String::from("") })
 }

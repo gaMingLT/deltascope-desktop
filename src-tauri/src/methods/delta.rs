@@ -3,7 +3,8 @@ use std::time::Instant;
 use crate::db::conn::{db_con};
 use crate::db::file_db::{get_path_image_from_name};
 use crate::db::tables::{create_events_table, create_files_table};
-use crate::tools::rsfls::{execute_fls};
+use crate::db::files::{input_values_files};
+use crate::tools::rsfls::{execute_fls, parse_fls_file, parse_fls_lines};
 
 pub async fn delta_images(out_path: String, images: Vec<String>, directory_name: String) {
   println!("Delating two images!");
@@ -37,12 +38,16 @@ async fn retrieve_info_image(out_path: String, name: String) -> Result<(), ()> {
   // FLS
   // - Execute FLS
   let image_path = get_path_image_from_name(name.clone()).unwrap();
-  execute_fls(image_path, out_path, name.clone()).unwrap();
+  let lines = execute_fls(image_path, out_path.clone(), name.clone()).await.unwrap();
 
-  // - Parse FLS
+  // - Parse Body File FLS 
+  // let parsed_body_file = parse_fls_file(out_path, name.clone()).unwrap();
+
+  // - Parse fls lines
+  let parsed_data = parse_fls_lines(lines);
 
   // - FLS Info into database
-
+  // input_values_files(name)
 
   // Mactime
   // - Execute Mactime
