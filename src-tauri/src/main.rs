@@ -6,13 +6,15 @@
 use std::path::PathBuf;
 
 use tauri::api::dialog;
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
+use tauri::async_runtime::Mutex;
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, StateManager};
 
 mod commands;
 mod db;
 mod methods;
 mod tools;
 
+pub struct OutputDir(Mutex<String>);
 
 fn main() {
     // TODO: Add different action - for example:
@@ -20,29 +22,36 @@ fn main() {
     // - select fls body?
     // - select mactimeline file?
 
-    let open = CustomMenuItem::new("select".to_string(), "Select Image Path");
-    let fileMenu = Submenu::new("File", Menu::new().add_item(open));
+    let select_image_path = CustomMenuItem::new("select-image-path".to_string(), "Select Image Path");
+    let set_output_dir = CustomMenuItem::new("set-output-dir".to_string(), "Set Output Directory"); 
+
+    let file_menu = Submenu::new("File", Menu::new().add_item(select_image_path).add_item(set_output_dir));
     let menu = Menu::new()
-        .add_submenu(fileMenu)
+        .add_submenu(file_menu)
         .add_native_item(MenuItem::Separator)
         .add_native_item(MenuItem::Quit);
-
-    let mut stored_paths: Vec<PathBuf> = Vec::new();
-
 
     tauri::Builder::default()
         .menu(menu)
         .on_menu_event(|event| match event.menu_item_id() {
-            "select" => {
+            "select-image-path" => {
                 dialog::FileDialogBuilder::default()
                     .pick_file(|path_buf| match path_buf {
                         Some(p) => commands::set_path_image(p).unwrap(),
                         _ => {}
                     });
-            }
+            },
+            // "set-output-dir" => {
+            //     dialog::FileDialogBuilder::default()
+            //         .pick_file(|path_buf| match path_buf {
+            //             Some(p) => commands::set_output_dir(p, ),
+            //             _ => {}
+            //         });
+            // },
             _ => {}
         })
-          .invoke_handler(tauri::generate_handler![commands::get_stored_paths, commands::initiate_delta])
+        .manage(OutputDir(Default::default()))
+        .invoke_handler(tauri::generate_handler![commands::get_stored_paths, commands::initiate_delta])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

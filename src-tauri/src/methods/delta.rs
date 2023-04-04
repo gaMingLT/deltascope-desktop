@@ -1,4 +1,6 @@
 use std::time::Instant;
+// use std::sync::{Arc, Barrier};
+// use threadpool::ThreadPool;
 
 use crate::db::conn::{db_con};
 use crate::db::file_db::{get_path_image_from_name};
@@ -6,19 +8,44 @@ use crate::db::tables::{create_events_table, create_files_table};
 use crate::db::files::{input_values_files};
 use crate::tools::rsfls::{execute_fls, parse_fls_file, parse_fls_lines};
 
-pub async fn delta_images(out_path: String, images: Vec<String>, directory_name: String) {
+pub async fn delta_images(out_path: String, images: Vec<String>, directory_name: String) -> Result<(), ()> {
   println!("Delating two images!");
-  println!("Images: {:?}", images);
-  println!("Directory: {}", directory_name);
+  // println!("Images: {:?}", images);
+  // println!("Directory: {}", directory_name);
 
   let start = Instant::now();
 
   for name in images.into_iter() {
-    retrieve_info_image(out_path.clone(), name.split('.').next().unwrap().to_string()).await.unwrap();
+    let temp_path = out_path.clone();
+    retrieve_info_image(temp_path.clone(), name.split('.').next().unwrap().to_string()).await.unwrap(); 
   }
 
+  // let mut handles = Vec::new();
+
+  // for name in images.into_iter() {
+  //   let temp_path = out_path.clone();
+    
+  //   // tokio::task::spawn(async move {
+  //   //   retrieve_info_image(temp_path.clone(), name.split('.').next().unwrap().to_string()).await.unwrap();
+  //   // });
+
+  //   handles.push(
+  //        tokio::task::spawn(async move {
+  //     retrieve_info_image(temp_path.clone(), name.split('.').next().unwrap().to_string()).await.unwrap();
+  //   }) 
+  //   );
+
+  // };
+
+  // for handle in handles {
+  //   let output = handle.await.expect("Execution failed!");
+  // }
+
+  // Before 32s
+  // Now 28.XXs when using scn-1-nginx-chance - but database locked issue!
   println!("Elapsed: {:?}", start.elapsed());
 
+  Ok(())
 }
 
 async fn retrieve_info_image(out_path: String, name: String) -> Result<(), ()> {
@@ -44,10 +71,10 @@ async fn retrieve_info_image(out_path: String, name: String) -> Result<(), ()> {
   // let parsed_body_file = parse_fls_file(out_path, name.clone()).unwrap();
 
   // - Parse fls lines
-  let parsed_data = parse_fls_lines(lines);
+  let parsed_data = parse_fls_lines(lines).unwrap();
 
   // - FLS Info into database
-  // input_values_files(name)
+  let res = input_values_files(name.clone(), parsed_data, conn.clone()).await.unwrap();
 
   // Mactime
   // - Execute Mactime
@@ -58,6 +85,8 @@ async fn retrieve_info_image(out_path: String, name: String) -> Result<(), ()> {
 
 
   conn.close().await;
+
+  println!("Finishing retrieving info from image: {}", name);
 
   Ok(())
 }

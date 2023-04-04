@@ -1,4 +1,5 @@
 use std::path::{PathBuf};
+use crate::OutputDir;
 use crate::db::file_db;
 use crate::methods::delta;
 use std::fs;
@@ -43,4 +44,17 @@ pub async fn initiate_delta(images: Vec<String>, directory_name: String) -> Resu
   let res = delta::delta_images(base_path,images, directory_name).await;
 
   Ok(Response { data: String::from("") })
+}
+
+
+#[tauri::command]
+pub fn remote_image_from_selection(name_image: String) {
+
+}
+
+
+pub fn set_output_dir(new_path: PathBuf, output_dir_state: OutputDir) {
+
+  // let path = 
+
 }
