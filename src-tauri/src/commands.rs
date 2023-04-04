@@ -2,7 +2,7 @@ use std::path::{PathBuf};
 use crate::OutputDir;
 use crate::db::file_db;
 use crate::methods::delta;
-use std::fs;
+use std::{fs, vec};
 use chrono::prelude::*;
 
 
@@ -14,6 +14,13 @@ pub struct Response {
 #[derive(serde::Serialize)]
 pub struct ErrorResponse {
   message: String,
+
+}
+#[derive(serde::Serialize)]
+pub struct EventsResponse {
+  base: Vec<String>,
+  next: Vec<String>,
+  delta: Vec<String>,
 }
 
 // Set path of image(s) - need 2 paths - on filesystem (no uploading)
@@ -52,6 +59,12 @@ pub fn remote_image_from_selection(name_image: String) {
 
 }
 
+#[tauri::command]
+pub fn get_events_images(images: Vec<String>, directory_name: String) -> Result<EventsResponse, ()> {
+  println!("Retrieving events images!");
+
+  Ok(EventsResponse { base: vec![], next: vec![], delta: vec![] })
+}
 
 pub fn set_output_dir(new_path: PathBuf, output_dir_state: OutputDir) {
 

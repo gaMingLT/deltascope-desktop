@@ -10,6 +10,7 @@ import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import { useState } from "react";
+import { invoke } from "@tauri-apps/api/tauri";
 
 const columns: GridColDef[] = [
   {
@@ -45,7 +46,7 @@ const EventsAction = ({
     next: new Array(),
   });
   // const [eventsSet, setEventsSet] = useState<boolean>(false);
-  const [ErrorMessage, setDeltaError] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [displayError, setDisplayErrorMessage] = useState<boolean>(false);
   const [displaySelectedRow, setDisplaySelectedRow] = useState("");
 
@@ -144,23 +145,19 @@ const EventsAction = ({
   }
 
   const getEvents = () => {
-    const data = { directoryName: directoryName, images: images };
+    // const data = { directoryName: directoryName, images: images };
+    console.log("Events");
 
-    fetch("http://localhost:8000/events/", {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then(async (e) => {
-        let data = await e.json();
-        setEventsParent(data)
-        eventsToTable(data.events);
-      })
+    invoke('get_events_images', { images: images, directoryName: directoryName })
+        .then(async (data: any) => {
+          // let data = await e;
+          console.log("Data: ", data);
+          // setEventsParent(data)
+          // eventsToTable(data.events);
+        })
       .catch((e) => {
-        setDisplayErrorMessage(true);
-        setDeltaError("Unable to retrieve events");
+        console.log('Error: ', e);
+        setErrorMessage(`Unable to retrieve events: ${e}`);
       });
   };
 
@@ -216,6 +213,22 @@ const EventsAction = ({
             </TabPanel>
 
           </TabContext>
+        </div>
+        <div>
+          <div>
+            <Button variant="contained" className="m-2" onClick={getEvents}>
+              Get Events
+            </Button>            
+          </div>
+          <div>
+            {errorMessage ? (
+              <Alert sx={{ marginTop: "1rem" }} severity="error">
+                {errorMessage}
+              </Alert>
+            ) : (
+              ""
+            )}
+          </div>
         </div>
       </div>
       {/* <Grid container spacing="2" direction="column">
@@ -281,7 +294,7 @@ const EventsAction = ({
             <Box>
               <Button variant="contained" sx={{ margin: "1rem" }} onClick={getEvents}>
                 Get Events
-              </Button>                
+              </Button> 
             </Box>
           </Grid>
           <Grid item>

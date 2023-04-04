@@ -3,11 +3,9 @@
     windows_subsystem = "windows"
 )]
 
-use std::path::PathBuf;
-
 use tauri::api::dialog;
 use tauri::async_runtime::Mutex;
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, StateManager};
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu };
 
 mod commands;
 mod db;
@@ -17,10 +15,6 @@ mod tools;
 pub struct OutputDir(Mutex<String>);
 
 fn main() {
-    // TODO: Add different action - for example:
-    // - select image
-    // - select fls body?
-    // - select mactimeline file?
 
     let select_image_path = CustomMenuItem::new("select-image-path".to_string(), "Select Image Path");
     let set_output_dir = CustomMenuItem::new("set-output-dir".to_string(), "Set Output Directory"); 
@@ -51,7 +45,7 @@ fn main() {
             _ => {}
         })
         .manage(OutputDir(Default::default()))
-        .invoke_handler(tauri::generate_handler![commands::get_stored_paths, commands::initiate_delta])
+        .invoke_handler(tauri::generate_handler![commands::get_stored_paths, commands::initiate_delta, commands::get_events_images])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
