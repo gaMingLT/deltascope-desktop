@@ -7,15 +7,9 @@ use sqlx::{Pool, Sqlite, query};
 pub async fn input_values_files(name: String, values: Vec<Bodyfile3Line>, conn: Pool<Sqlite>) -> Result<Pool<Sqlite>, ()> {
   println!("Adding files value into datbase for: {}", name);
   let new_name = name.replace("-","_");
-  // let query_str = format!("INSERT INTO {new_name}_files VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").as_str();
-  // let res = sqlx::query!(query_str, values).execute(&conn).await.unwrap();
-  // println!("Res: {:?}", res);
-
   let line = values.get(0).unwrap();
 
-  // let query = format!("INSERT INTO {new_name}_files VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)");
   let query = format!("INSERT INTO {new_name}_files VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-
   for line in values.into_iter() {
     let res = sqlx::query(query.as_str())
         .bind(line.get_md5())
@@ -32,8 +26,6 @@ pub async fn input_values_files(name: String, values: Vec<Bodyfile3Line>, conn: 
         .execute(&conn)
         .await;    
   }
-
-
 
   Ok(conn)
 }

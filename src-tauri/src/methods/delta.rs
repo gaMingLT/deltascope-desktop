@@ -6,7 +6,9 @@ use crate::db::conn::{db_con};
 use crate::db::file_db::{get_path_image_from_name};
 use crate::db::tables::{create_events_table, create_files_table};
 use crate::db::files::{input_values_files};
+use crate::db::events::{input_values_events};
 use crate::tools::rsfls::{execute_fls, parse_fls_file, parse_fls_lines};
+use crate::tools::mactime::{execute_mactime, parse_mactime_lines};
 
 pub async fn delta_images(out_path: String, images: Vec<String>, directory_name: String) -> Result<(), ()> {
   println!("Delating two images!");
@@ -71,18 +73,20 @@ async fn retrieve_info_image(out_path: String, name: String) -> Result<(), ()> {
   // let parsed_body_file = parse_fls_file(out_path, name.clone()).unwrap();
 
   // - Parse fls lines
-  let parsed_data = parse_fls_lines(lines).unwrap();
+  let parsed_files_data = parse_fls_lines(lines).unwrap();
 
   // - FLS Info into database
-  let res = input_values_files(name.clone(), parsed_data, conn.clone()).await.unwrap();
+  let conn = input_values_files(name.clone(), parsed_files_data, conn.clone()).await.unwrap();
 
   // Mactime
   // - Execute Mactime
+  let mactime_lines = execute_mactime(out_path.clone(), name.clone()).unwrap();
 
-  // - Parse Mactime
+  // - Parse Mactime lines
+  let parsed_events_data = parse_mactime_lines(mactime_lines).unwrap(); 
 
   // - Mactime into database
-
+  input_values_events(name.clone(), parsed_events_data, conn.clone()).await.unwrap();
 
   conn.close().await;
 
