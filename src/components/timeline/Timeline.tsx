@@ -65,7 +65,8 @@ const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
     deltaEvents.map((element: any) => {
       // From Path to name
       const path = element.name
-      const name = path.split('/')[-1]
+      // // const name = path.split('/')[-1]
+      // console.log("Name: ", path);
       let fileType;
 
       // from FileType to file_type
@@ -83,7 +84,7 @@ const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
           fileType = "Link"
           break;
         default:
-          fileType = element.FileType[0]
+          fileType = element.file_type[0]
           break;
       }
 
@@ -96,19 +97,19 @@ const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
       // Date to date
       let itemToAdd: any = { id: idCounter, content: divContent , start: element.date }
 
-      if (element.bActivity != ".") {
+      if (element.b_activity != ".") {
         itemToAdd.className = "created"
         // itemToAdd.className="bg-blue-400";
       }
-      else if (element.mActivity != ".")  {
+      else if (element.m_activity != ".")  {
         itemToAdd.className = "modified";
         // itemToAdd.className="bg-green-400";
       }      
-      else if (element.aActivity != ".") {
+      else if (element.a_activity != ".") {
         itemToAdd.className = "accessed"
         // itemToAdd.className="bg-gray-400";
       }
-      else if (element.cActivity != ".") {
+      else if (element.c_activity != ".") {
         itemToAdd.className = "changed"
         // itemToAdd.className="bg-red-400";
       }
@@ -150,10 +151,10 @@ const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
           <div className="bg-gray-400 px-2 py-2 rounded-md w-max cursor-pointer" onClick={() => changeEventsShown("accessed")}>
             <h3 className="text-black font-bold" >Accessed</h3>
           </div>
-          <div className="bg-red-400 px-2 py-2 rounded-md w-max cursor-pointer" onClick={() => changeEventsShown("accessed")}>
+          <div className="bg-red-400 px-2 py-2 rounded-md w-max cursor-pointer" onClick={() => changeEventsShown("changed")}>
             <h3 className="text-black font-bold">Changed: </h3>
           </div>
-          <div className="bg-blue-400 px-2 py-2 rounded-md w-max cursor-pointer" onClick={() => changeEventsShown("accessed")}>
+          <div className="bg-blue-400 px-2 py-2 rounded-md w-max cursor-pointer" onClick={() => changeEventsShown("created")}>
             <h3 className="text-black font-bold" >Created: </h3>
           </div>
         </div>

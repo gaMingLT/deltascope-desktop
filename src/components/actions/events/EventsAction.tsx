@@ -151,7 +151,15 @@ const EventsAction = ({
   const getEvents = () => {
     console.log("Events");
 
-    invoke('get_events_images', { images: images, directoryPath: directoryName })
+    const images_storage = JSON.parse(localStorage.getItem("selectedDeltaImages") as string) as Array<String>;
+    const directoryPath = JSON.parse(localStorage.getItem("directoryPath") as string) as String;
+
+    if (!images_storage || images_storage.length != 2 || !directoryPath) {
+      setErrorMessage(`Images & Path not set!`);
+      return;
+    }
+
+    invoke('get_events_images', { images: images_storage, directoryPath: directoryPath })
         .then(async (data: any) => {
           console.log("Data: ", data);
           
@@ -161,6 +169,7 @@ const EventsAction = ({
       .catch((e) => {
         console.log('Error: ', e);
         setErrorMessage(`Unable to retrieve events: ${e.message}`);
+        setTimeout(() => setErrorMessage(""), 5000);
       });
   };
 
@@ -168,8 +177,24 @@ const EventsAction = ({
 
   return (
     <>
-      <div>
-        <div>
+      <div className="flex gap-10 ">
+       <div className="w-1/12">
+          <div>
+            <Button variant="contained" className="m-2 bg-slate-800" onClick={getEvents}>
+              Get Events
+            </Button>            
+          </div>
+          <div>
+            {errorMessage ? (
+              <Alert className="mt-4 w-max mr-auto" severity="error">
+                {errorMessage}
+              </Alert>
+            ) : (
+              ""
+            )}
+          </div>
+        </div>
+        <div className="w-11/12">
           <TabContext value={value.toString()}>
             <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
               <TabList
@@ -217,7 +242,7 @@ const EventsAction = ({
 
           </TabContext>
         </div>
-        <div>
+        {/* <div>
           <div>
             <Button variant="contained" className="m-2 bg-slate-800" onClick={getEvents}>
               Get Events
@@ -225,14 +250,14 @@ const EventsAction = ({
           </div>
           <div>
             {errorMessage ? (
-              <Alert sx={{ marginTop: "1rem" }} severity="error">
+              <Alert className="mt-4 w-max mr-auto" severity="error">
                 {errorMessage}
               </Alert>
             ) : (
               ""
             )}
           </div>
-        </div>
+        </div> */}
       </div>
       {/* <Grid container spacing="2" direction="column">
         <Grid item>

@@ -1,6 +1,6 @@
 import { Alert, Box, Button, Checkbox, FormControlLabel, FormGroup, Grid, LinearProgress } from "@mui/material";
 import { invoke } from '@tauri-apps/api/tauri'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type ResponseType = { directory_path: String, images: Array<String> }
 
@@ -13,13 +13,19 @@ export default function ImageActions({
 }) {
   const [availableImages, setAvailableImages] = useState<Array<string>>([]);
   const [selectedImagesCheckBox, setSelectedImagesCheckBox] = useState<{[index: string]: boolean}>({});
-  const [selectedImages, setSelectedImages] = useState<Array<string>>([]);
-  
+  // const [selectedImages, setSelectedImages] = useState<Array<string>>([]);
 
+  const [cleanedStorage, setCleanedStorage] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!cleanedStorage) {
+      localStorage.setItem("selectedImages", JSON.stringify([]));
+      setCleanedStorage(true);
+    }
+  })
+  
   const [ErrorMessage, setDeltaError] = useState<string>("");
-  // const [displayError, setDisplayErrorMessage] = useState<boolean>(false);
   const [message, setMessage] = useState<string>("");
-  // const [displayMessage, setDisplayMessage] = useState<boolean>(false);
   const [displayLoading, setDisplayLoading] = useState<boolean>(false);
 
   const loadAvailableImages = async () => {
@@ -40,29 +46,43 @@ export default function ImageActions({
 
   const handleChange = (e:any ) => {
     const image =  e.target.getAttribute('data-name');
-    // console.log('Images: ', selectedImages);
-    // console.log('Image:', image);
+    console.log('Image:', image);
 
     setSelectedImagesCheckBox((selectedImagesCheckBox) => {
       const temp = selectedImagesCheckBox;
       temp[image] = !temp[image];
       return temp;
     })
-
-    // console.log('Checkbox: ', selectedImagesCheckBox); 
     
-    setSelectedImages((selectedImages) => {
-      if (selectedImages.includes(image)) {
-        const imagesArray = selectedImages.filter((name) => image !== name);
-        return imagesArray;
-      } else {
-        return [image, ...selectedImages];
+    // setSelectedImages((selectedImages) => {
+    //   if (selectedImages.includes(image)) {
+    //     const imagesArray = selectedImages.filter((name) => image !== name);
+    //     return imagesArray;
+    //   } else {
+    //     console.log("In here: else", image, ...selectedImages);
+    //     return [...selectedImages, image];
+    //   }
+    // });
+    const images_storage = JSON.parse(localStorage.getItem("selectedImages") as string) as Array<String>;
+
+    if (images_storage) {
+      if (images_storage.includes(image)) {
+        const temp_images = images_storage.filter(value => value != image)
+        localStorage.setItem("selectedImages", JSON.stringify(temp_images)); 
       }
-    });
-    // console.log('Images updated: ', selectedImages);
+      else {
+        images_storage.push(image)
+        localStorage.setItem("selectedImages", JSON.stringify(images_storage)); 
+      }
+    }
+    else {
+      localStorage.setItem("selectedImages", JSON.stringify([image]));
+    }
+    // console.log("Test: ", JSON.parse(localStorage.getItem("selectedImages") as string) as Array<String>);
   }
 
   const initiateDelta = async () => {
+    const selectedImages = JSON.parse(localStorage.getItem("selectedImages") as string) as Array<String>;
     if (selectedImages.length != 2) {
       setDeltaError("Unable to initiate delta - amount of selected imgaes not supported (must be exactly 2)");
       setTimeout(() => setDeltaError(""), 5000);
@@ -74,28 +94,28 @@ export default function ImageActions({
 
       invoke('initiate_delta', { images: selectedImages, directoryName: "" })
       .then(async (res: any) => {
-        console.log('Reponse: ', res);
-
-        setParentDirectoryName(res.directory_path);
-        setImages(res.images);
+        // setParentDirectoryName(res.directory_path);
+        // setImages(res.images);
+        localStorage.setItem("selectedDeltaImages", JSON.stringify(res.images));
+        localStorage.setItem("directoryPath", JSON.stringify(res.directory_path));
         setMessage('Deltaing images - succesfully');
         setTimeout(() => setMessage(''), 5000);
+        setDisplayLoading(false); 
       })
       .catch((e) => {
-        console.log('Error Response: ', e);
-    
         setDeltaError(`Error: ${e}!`);
         setTimeout(() => setDeltaError(''), 5000);
+        setDisplayLoading(false);
       })
     }
 
-    setDisplayLoading(false);
+    // setDisplayLoading(false);
   }
 
   return (
     <>
       <Grid item xs={3} className="py-2 px-2">
-        <div className="flex flex-col w-max justify-between gap-5 px-2 py-1.5" >
+        <div className="flex flex-col w-max justify-between gap-5 px-2 py-1.5">
           {
             availableImages.map((element: string,index: number) => {
               return (
@@ -130,9 +150,10 @@ export default function ImageActions({
                   ""
                 )}
               </Box>
-              <Box bgcolor="white">
+              <Box bgcolor="white" className="mt-4">
                 {displayLoading ? (
-                  <LinearProgress color="primary" />
+                  // TODO: Make size not fixed
+                  <LinearProgress className="rounded-md w-52 mx-auto" color="secondary" />
                 ) : ("")
                 }
               </Box>
