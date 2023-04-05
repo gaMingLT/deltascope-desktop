@@ -3,8 +3,13 @@ import ImageActions from '@/components/images/ImageActions';
 import DisplayTimeline from '@/components/timeline/Timeline';
 import { Grid } from '@mui/material';
 import Head from 'next/head'
+import { useState } from 'react';
 
 export default function Home() {
+  const [directoryName, setDirectoryName] = useState<string>("");
+  const [selectedImages, setSelectedImages] = useState<Array<string>>([]);
+  const [eventsParent, setEventsParent] = useState<any>();
+
   return (
     <>
       <Head>
@@ -24,12 +29,12 @@ export default function Home() {
           <Grid item xs={12} className="flex flex-col gap-5 h-full my-auto">
               <div>
                 {/* Timeline Here */}
-                <DisplayTimeline eventsData={undefined} />
+                <DisplayTimeline eventsData={eventsParent} />
               </div>
               <div className='bg-slate-900 h-1' ></div>
               <Grid item container className="h-full px-2 py-2">
-                <ImageActions />
-                <Actions directory={""} images={""} setEventsParent={""} />
+                <ImageActions setImages={setSelectedImages} setParentDirectoryName={setDirectoryName} />
+                <Actions directory={directoryName} images={selectedImages} setEventsParent={setEventsParent} />
               </Grid>          
           </Grid>          
         </Grid>

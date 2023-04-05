@@ -5,8 +5,6 @@ import TabPanel from "@mui/lab/TabPanel";
 import { useState } from "react";
 import EventsAction from "./events/EventsAction";
 import FilesAction from "./files/FilesAction";
-// import DisplayEvents from "./DisplayEvents";
-// import DisplayFiles from "./DisplayFiles";
 
 const Actions = ({
   directory,
@@ -41,15 +39,11 @@ const Actions = ({
             </Box>
 
             <TabPanel value="0">
-              <EventsAction images={[]} directoryName="" setEventsParent={undefined} />
-              {/* <p>Events</p> */}
-              {/* <DisplayEvents images={images} directoryName={directory} setEventsParent={setEventsParent} /> */}
+              <EventsAction images={images} directoryName={directory} setEventsParent={setEventsParent} />
             </TabPanel>
 
             <TabPanel value="1">
-              {/* <p>Files</p> */}
-              <FilesAction directoryName={""} />
-              {/* <DisplayFiles directoryName={directory} /> */}
+              <FilesAction directoryName={directory} />
             </TabPanel>
 
           </TabContext> 

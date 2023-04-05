@@ -145,19 +145,18 @@ const EventsAction = ({
   }
 
   const getEvents = () => {
-    // const data = { directoryName: directoryName, images: images };
     console.log("Events");
 
-    invoke('get_events_images', { images: images, directoryName: directoryName })
+    invoke('get_events_images', { images: images, directoryPath: directoryName })
         .then(async (data: any) => {
-          // let data = await e;
           console.log("Data: ", data);
-          // setEventsParent(data)
-          // eventsToTable(data.events);
+          
+          setEventsParent(data)
+          eventsToTable(data);
         })
       .catch((e) => {
         console.log('Error: ', e);
-        setErrorMessage(`Unable to retrieve events: ${e}`);
+        setErrorMessage(`Unable to retrieve events: ${e.message}`);
       });
   };
 

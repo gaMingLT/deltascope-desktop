@@ -1,8 +1,16 @@
 import { Alert, Box, Button, Checkbox, FormControlLabel, FormGroup, Grid, LinearProgress } from "@mui/material";
 import { invoke } from '@tauri-apps/api/tauri'
-import { use, useState } from "react";
+import { useState } from "react";
 
-export default function ImageActions() {
+type ResponseType = { directory_path: String, images: Array<String> }
+
+export default function ImageActions({
+  setParentDirectoryName,
+  setImages,
+}: {
+  setParentDirectoryName: any;
+  setImages: any;
+}) {
   const [availableImages, setAvailableImages] = useState<Array<string>>([]);
   const [selectedImagesCheckBox, setSelectedImagesCheckBox] = useState<{[index: string]: boolean}>({});
   const [selectedImages, setSelectedImages] = useState<Array<string>>([]);
@@ -65,10 +73,11 @@ export default function ImageActions() {
       setDisplayLoading(true);
 
       invoke('initiate_delta', { images: selectedImages, directoryName: "" })
-      .then(async (res) => {
+      .then(async (res: any) => {
         console.log('Reponse: ', res);
-        // let data = await res.json();
 
+        setParentDirectoryName(res.directory_path);
+        setImages(res.images);
         setMessage('Deltaing images - succesfully');
         setTimeout(() => setMessage(''), 5000);
       })
