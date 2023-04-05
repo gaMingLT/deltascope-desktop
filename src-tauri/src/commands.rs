@@ -64,7 +64,7 @@ pub fn remote_image_from_selection(name_image: String) {
 pub async fn get_events_images(images: Vec<String>, directoryPath: String) -> Result<EventsResponse, ErrorResponse> {
   println!("Retrieving events images!: {:?} & {:?} ", images, directoryPath);
 
-  if images.is_empty() && directoryPath.is_empty() {
+  if images.is_empty() || directoryPath.is_empty() {
     return Err(ErrorResponse { message: "Supplied values are empty".to_string() })
   }
 

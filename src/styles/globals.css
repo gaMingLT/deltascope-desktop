@@ -109,3 +109,19 @@ a {
     color-scheme: dark;
   }
 }
+
+.vis-item.modified {
+  background-color: #4ade80;
+}
+
+.vis-item.created {
+  background-color: #60a5fa;
+}
+
+.vis-item.changed {
+  background-color: #f87171;
+}
+
+.vis-item.accessed {
+  background-color: #9ca3af;
+}

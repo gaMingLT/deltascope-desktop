@@ -98,45 +98,49 @@ const EventsAction = ({
       next: new Array(),
     };
 
+    // events.forEach((key: string) => {
+      
+    // });
     
     Object.keys(events).map((key: string) => {
 
-        const eventsType = events[key]
-        let idCounter = 0;
-        let previousDate = "";
-        eventsType.forEach((element: any) => {
-          
-          let itemToAdd: any = {
-            id: idCounter,
-            date: element.Date,
-            size: element.Size,
-            activity: getActivity(element.mActivity, element.aActivity, element.cActivit, element.bActivity),
-            fileType: getFileType(element.FileType[0]),
-            ownerPerm: element.OwnerPerm,
-            groupPerm: element.GroupPerm,
-            otherPerm: element.OtherPerm,
-            uid: element.UUID,
-            guid: element.GUID,
-            inode: element.Inode,
-            name: element.Path
-          }
+      const eventsType = events[key]
 
-          switch(key) {
-            case "delta":
-              tempEventsData.delta.push(itemToAdd);
-              break;
-            case "next":
-              tempEventsData.next.push(itemToAdd);
-              break;
-            case "base":
-              tempEventsData.base.push(itemToAdd);
-              break;
-            default:
-              break;
-          }
-          
-          idCounter++;
-        })
+      let idCounter = 0;
+      let previousDate = "";
+      eventsType.forEach((element: any) => {
+        
+        let itemToAdd: any = {
+          id: idCounter,
+          date: element.date,
+          size: element.size,
+          activity: getActivity(element.m_activity, element.a_activity, element.c_activity, element.b_activity),
+          fileType: getFileType(element.file_type[0]),
+          ownerPerm: element.owner_perm,
+          groupPerm: element.group_perm,
+          otherPerm: element.other_perm,
+          uid: element.uid,
+          guid: element.gid,
+          inode: element.inode,
+          name: element.name
+        }
+
+        switch(key) {
+          case "delta":
+            tempEventsData.delta.push(itemToAdd);
+            break;
+          case "next":
+            tempEventsData.next.push(itemToAdd);
+            break;
+          case "base":
+            tempEventsData.base.push(itemToAdd);
+            break;
+          default:
+            break;
+        }
+        
+        idCounter++;
+      })
 
         // setEventsSet(true)
     })
@@ -179,43 +183,43 @@ const EventsAction = ({
             </Box>
 
             <TabPanel value="0">
-              {/* <Box height={'350px'} width='100%'> */}
+              <Box height={'350px'} width='100%'>
                 <DataGrid
                   onRowClick={handleRowClick}
                   sx={{ fontSize: "1.2rem" }}
                   rows={events.delta}
                   columns={columns}
                 />
-              {/* </Box> */}
+              </Box>
             </TabPanel>
 
             <TabPanel value="1">
-              {/* <Box height={'350px'} width='100%'> */}
+              <Box height={'350px'} width='100%'>
                 <DataGrid
                   onRowClick={handleRowClick}
                   sx={{ fontSize: "1.2rem" }}
                   rows={events.base}
                   columns={columns}
                 />
-              {/* </Box> */}
+              </Box>
             </TabPanel>
 
             <TabPanel value="2">
-              {/* <Box height={'350px'} width='100%'> */}
+              <Box height={'350px'} width='100%'>
                 <DataGrid
                   onRowClick={handleRowClick}
                   sx={{ fontSize: "1.2rem" }}
                   rows={events.next}
                   columns={columns}
                 />
-              {/* </Box> */}
+              </Box>
             </TabPanel>
 
           </TabContext>
         </div>
         <div>
           <div>
-            <Button variant="contained" className="m-2" onClick={getEvents}>
+            <Button variant="contained" className="m-2 bg-slate-800" onClick={getEvents}>
               Get Events
             </Button>            
           </div>

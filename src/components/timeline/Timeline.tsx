@@ -60,14 +60,16 @@ const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
 
     const items: Array<any> = []
     let idCounter = 0;
-    const events = eventsData["events"]
-    const deltaEvents = events.delta
+    // const events = eventsData["events"]
+    const deltaEvents = eventsData.delta;
     deltaEvents.map((element: any) => {
-      const path = element.Path
+      // From Path to name
+      const path = element.name
       const name = path.split('/')[-1]
       let fileType;
 
-      switch(element.FileType[0]) {
+      // from FileType to file_type
+      switch(element.file_type[0]) {
         case "-":
           fileType = "Unknown"
           break;
@@ -91,19 +93,24 @@ const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
           <p>Type: ${fileType}</p>
          </div>`
 
-      let itemToAdd: any = { id: idCounter, content: divContent , start: element.Date }
+      // Date to date
+      let itemToAdd: any = { id: idCounter, content: divContent , start: element.date }
 
       if (element.bActivity != ".") {
         itemToAdd.className = "created"
+        // itemToAdd.className="bg-blue-400";
       }
       else if (element.mActivity != ".")  {
-        itemToAdd.className = "modified"
+        itemToAdd.className = "modified";
+        // itemToAdd.className="bg-green-400";
       }      
       else if (element.aActivity != ".") {
         itemToAdd.className = "accessed"
+        // itemToAdd.className="bg-gray-400";
       }
       else if (element.cActivity != ".") {
         itemToAdd.className = "changed"
+        // itemToAdd.className="bg-red-400";
       }
 
 
