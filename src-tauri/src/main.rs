@@ -45,7 +45,7 @@ fn main() {
             _ => {}
         })
         .manage(OutputDir(Default::default()))
-        .invoke_handler(tauri::generate_handler![commands::get_stored_paths, commands::initiate_delta, commands::get_events_images])
+        .invoke_handler(tauri::generate_handler![commands::get_stored_paths, commands::initiate_delta, commands::get_events_images, commands::delete_available_images])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

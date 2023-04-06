@@ -63,6 +63,29 @@ export default function ImageActions({
     };
   }, []);
 
+  const deleteAvailableImages = () => {
+    const newImages = [];
+    const oldImages = [];
+    for (const index in availableImages) {
+      const image = parsePathImage(availableImages[index]);
+      if (!selectedImagesCheckBox[image]) {
+        newImages.push(image)
+      }
+      else {
+        delete selectedImagesCheckBox[image];
+        oldImages.push(availableImages[index])
+      }
+    }
+    localStorage.setItem("selectedImages", JSON.stringify([]));
+
+    invoke("delete_available_images", { images: oldImages }).then().catch((e) => {
+      setDeltaError(`Error: ${e}`);
+      handleErrorMessage();
+    });
+
+    // console.log("Checkbox: ", selectedImagesCheckBox);
+    // setAvailableImages(newImages);
+  }
   
   const [errorMessage, setDeltaError] = useState<string>("");
   const [message, setMessage] = useState<string>("");
@@ -70,12 +93,20 @@ export default function ImageActions({
 
   const loadAvailableImages = async () => {
     const stored_paths: Array<string> = await invoke('get_stored_paths');
+
+    if (stored_paths.length == 0) {
+      setDeltaError("No selected images available!")
+      handleErrorMessage()
+      setAvailableImages([]);
+      return;
+    }
+
     const temp: {[index: string]:any} = {};
     stored_paths.forEach((element: string) => {
       temp[parsePathImage(element)] = false;
     });
-    setSelectedImagesCheckBox(temp);
 
+    setSelectedImagesCheckBox(temp);
     setAvailableImages(stored_paths);
   }
 
@@ -93,8 +124,10 @@ export default function ImageActions({
       temp[image] = !temp[image];
       return temp;
     })
+
+    console.log("Checkboks: ", selectedImagesCheckBox);
     
-    const images_storage = JSON.parse(localStorage.getItem("selectedImages") as string) as Array<String>;
+    const images_storage = JSON.parse(localStorage.getItem("selectedImages") as string) as Array<string>;
 
     if (images_storage) {
       if (images_storage.includes(image)) {
@@ -113,7 +146,7 @@ export default function ImageActions({
   }
 
   const initiateDelta = async () => {
-    const selectedImages = JSON.parse(localStorage.getItem("selectedImages") as string) as Array<String>;
+    const selectedImages = JSON.parse(localStorage.getItem("selectedImages") as string) as Array<string>;
     if (selectedImages.length != 2) {
       setDeltaError("Unable to initiate delta - amount of selected imgaes not supported (must be exactly 2)");
       handleErrorMessage();
@@ -149,7 +182,7 @@ export default function ImageActions({
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={selectedImagesCheckBox[element]}
+                      // checked={selectedImagesCheckBox[parsePathImage(element)]}
                       onChange={handleChange}
                       inputProps={
                         { "data-name": parsePathImage(element) } as any
@@ -164,6 +197,13 @@ export default function ImageActions({
         </div>
         <div className="mb-4 mt-auto w-full h-max align-bottom">
           <div className="flex flex-col gap-3 w-full justify-between bottom-5">
+          <Button
+              variant="contained"
+              onClick={deleteAvailableImages}
+              className="bg-red-800 w-100 hover:bg-gray-600"
+            >
+              Delete Selected Images
+            </Button>
             <Button
               variant="contained"
               onClick={loadAvailableImages}

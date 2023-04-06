@@ -2,9 +2,9 @@ use std::path::{PathBuf};
 use crate::{OutputDir, tools::mactime::MacTimeLine};
 use crate::db::file_db;
 use crate::methods::delta;
-use std::{fs, vec};
+use std::{fs};
 use chrono::prelude::*;
-use tauri::{window, Window, Manager};
+use tauri::{Window, Manager};
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
@@ -80,9 +80,16 @@ pub async fn get_events_images(images: Vec<String>, directoryPath: String) -> Re
   Ok(EventsResponse { base: res.0, next: res.1, delta: res.2 })
 }
 
+#[tauri::command]
+pub async fn delete_available_images(images: Vec<String>) -> Result<(), ()> {
+  println!("Deleting selected available images: {:?}", images);
+  file_db::delete_images(images);
+
+  Ok(())
+}
+
 
 pub fn set_output_dir(new_path: PathBuf, output_dir_state: OutputDir) {
-
   // let path = 
 
 }
