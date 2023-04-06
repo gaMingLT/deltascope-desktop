@@ -5,7 +5,7 @@
 
 use tauri::api::dialog;
 use tauri::async_runtime::Mutex;
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu };
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, Manager };
 
 mod commands;
 mod db;
@@ -27,7 +27,7 @@ fn main() {
 
     tauri::Builder::default()
         .menu(menu)
-        .on_menu_event(|event| match event.menu_item_id() {
+        .on_menu_event(| event| match event.menu_item_id() {
             "select-image-path" => {
                 dialog::FileDialogBuilder::default()
                     .pick_file(|path_buf| match path_buf {
@@ -38,14 +38,14 @@ fn main() {
             // "set-output-dir" => {
             //     dialog::FileDialogBuilder::default()
             //         .pick_file(|path_buf| match path_buf {
-            //             Some(p) => commands::set_output_dir(p, ),
+            //             Some(p) => commands::set_output_dir(p).unwrap(),
             //             _ => {}
             //         });
             // },
             _ => {}
         })
         .manage(OutputDir(Default::default()))
-        .invoke_handler(tauri::generate_handler![commands::get_stored_paths, commands::initiate_delta, commands::get_events_images, commands::delete_available_images])
+        .invoke_handler(tauri::generate_handler![commands::get_stored_paths, commands::initiate_delta, commands::get_events_images, commands::delete_available_images, commands::get_output_dir])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

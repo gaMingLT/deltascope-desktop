@@ -2,6 +2,7 @@ import Actions from '@/components/actions/Actions';
 import OutputDirectory from '@/components/header/OutputDirectory';
 import Routes from '@/components/header/Routes';
 import DisplaySelectedImages from '@/components/header/SelectedImages';
+import Cases from '@/components/images/Cases';
 import ImageActions from '@/components/images/ImageActions';
 import DisplayTimeline from '@/components/timeline/Timeline';
 import { Grid } from '@mui/material';
@@ -30,8 +31,9 @@ export default function Home() {
             <DisplaySelectedImages />
             <Routes />
           </Grid>
-          <Grid container className='h-5/6'>
+          <Grid container direction="row" className='h-5/6 gap-5 flex-nowrap px-4 py-4'>
             <ImageActions setImages={undefined} setParentDirectoryName={undefined} />
+            <Cases />
           </Grid>
         </Grid>
       </main>

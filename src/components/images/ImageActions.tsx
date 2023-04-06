@@ -172,6 +172,9 @@ export default function ImageActions({
   return (
     <>
       <Grid item xs={3} className="flex flex-col py-2 px-2 h-full bg-slate-400 rounded-sm">
+        <div>
+          <h2 className="text-2xl text-center font-mono">Images</h2>
+        </div>
         <div className="flex flex-col w-max justify-between gap-5 px-2 py-1.5 h-2/4 overflow-y-auto overscroll-y-contain rounded-sm">
           {availableImages.map((element: string, index: number) => {
             return (

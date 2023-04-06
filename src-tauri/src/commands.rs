@@ -1,6 +1,9 @@
 use std::path::{PathBuf};
 use crate::{OutputDir, tools::mactime::MacTimeLine};
 use crate::db::file_db;
+use crate::db::conn;
+use crate::db::tables::create_output_dir_table;
+use crate::db::app;
 use crate::methods::delta;
 use std::{fs};
 use chrono::prelude::*;
@@ -88,8 +91,24 @@ pub async fn delete_available_images(images: Vec<String>) -> Result<(), ()> {
   Ok(())
 }
 
+#[tauri::command]
+pub async fn get_output_dir() -> Result<(), ()> {
+  println!("Getting output directory path");
 
-pub fn set_output_dir(new_path: PathBuf, output_dir_state: OutputDir) {
-  // let path = 
+  let conn = conn::db_con_app().await.unwrap();
+  app::get_output_path(conn).await;
 
+  Ok(())
+}
+
+
+pub async fn set_output_dir(new_path: PathBuf) -> Result<(), ()>  {
+  println!("Setting output directory");
+
+  let mut conn = conn::db_con_app().await.unwrap();
+  conn = create_output_dir_table(conn.clone()).await.unwrap();
+
+  app::update_path_output_dir(new_path.clone(), conn).await;
+
+  Ok(())
 }

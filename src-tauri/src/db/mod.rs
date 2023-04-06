@@ -4,3 +4,4 @@ pub mod tables;
 pub mod files;
 pub mod events;
 pub mod delta;
+pub mod app;
