@@ -9,9 +9,6 @@ import Head from 'next/head'
 import { useState } from 'react';
 
 export default function Home() {
-  const [directoryName, setDirectoryName] = useState<string>("");
-  const [selectedImages, setSelectedImages] = useState<Array<string>>([]);
-  const [eventsParent, setEventsParent] = useState<any>();
 
   return (
     <>
@@ -22,8 +19,8 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="h-screen bg-slate-600">
-        <Grid container >
-          <Grid item xs={12}>
+        <Grid className='flex  flex-col h-full gap-4'>
+          <Grid item xs={12} className=''>
               <div>
                 <h1 className="text-3xl px-2 py-2 font-mono text-center" >Deltascope</h1>
               </div>          
@@ -33,20 +30,9 @@ export default function Home() {
             <DisplaySelectedImages />
             <Routes />
           </Grid>
-          <Grid>
+          <Grid container className='h-5/6'>
             <ImageActions setImages={undefined} setParentDirectoryName={undefined} />
           </Grid>
-          {/* TODO: Make this stretch to bottom of page */}
-          {/* <Grid item xs={12} className="flex flex-col gap-5 h-full my-auto">
-              <div>
-                <DisplayTimeline eventsData={eventsParent} />
-              </div>
-              <div className='bg-slate-900 h-1' ></div>
-              <Grid item container className="h-full px-2 py-2">
-                <ImageActions setImages={setSelectedImages} setParentDirectoryName={setDirectoryName} />
-                <Actions directory={directoryName} images={selectedImages} setEventsParent={setEventsParent} />
-              </Grid>          
-          </Grid>           */}
         </Grid>
       </main>
     </>

@@ -49,28 +49,6 @@ const FileAction = ({ fileBlob }: { fileBlob: Blob | undefined }) => {
           defaultValue={"File Content Here!"}
         />
       </div>
-      {/* <Grid item container spacing={4} xs direction="column">
-        <Grid item>
-          <Box>
-            <Typography variant="h5" >File Name here</Typography>
-          </Box>
-        </Grid>
-        <Grid item>
-          <Box padding={0.5} >
-                 <Editor
-                  
-                  height="30vh"
-                  theme="vs-light"
-                  defaultLanguage="text"
-                  defaultValue={"File Content Here!"}
-
-                />
-          </Box>
-        </Grid>
-        <Grid item>
-            <Button variant="contained" onClick={loadFile} >Load file</Button>
-        </Grid>
-      </Grid> */}
     </>
   );
 };

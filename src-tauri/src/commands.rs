@@ -4,7 +4,12 @@ use crate::db::file_db;
 use crate::methods::delta;
 use std::{fs, vec};
 use chrono::prelude::*;
+use tauri::{window, Window, Manager};
 
+#[derive(Clone, serde::Serialize)]
+struct Payload {
+  message: String,
+}
 
 #[derive(serde::Serialize)]
 pub struct DeltaResponse {
@@ -42,7 +47,7 @@ pub fn get_stored_paths() -> Result<Vec<String>, ()> {
 
 // Initiate Delta - on selected paths
 #[tauri::command]
-pub async fn initiate_delta(images: Vec<String>, directory_name: String) -> Result<DeltaResponse, ErrorResponse> {
+pub async fn initiate_delta(images: Vec<String>, directory_name: String, window: Window) -> Result<DeltaResponse, ErrorResponse> {
   // let id = Uuid::new_v4();
   let date = Local::now().format("%Y-%m-%d-%H-%M-%S");
   let base_path = format!("output/{date}");
@@ -50,6 +55,8 @@ pub async fn initiate_delta(images: Vec<String>, directory_name: String) -> Resu
   fs::create_dir_all(base_path.clone()).unwrap();
 
   let res = delta::delta_images(base_path.clone(), images.clone(), directory_name).await;
+
+window.emit_all("delta_finished", Payload { message: "Tauri is awesome!".into() }).unwrap();
 
   Ok(DeltaResponse { images: images, directory_path: base_path })
 }

@@ -49,35 +49,6 @@ const Actions = ({
           </TabContext> 
       </div>
     </Grid>
-      {/* <Grid item xs={8}>
-          <Box textAlign="center" padding="1rem">
-            <Box textAlign="center">
-              <h2>Events</h2>
-            </Box>
-            <Box>
-              <TabContext value={value.toString()}>
-                <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-                  <TabList
-                    onChange={handleChange}
-                    aria-label="lab API tabs example"
-                  >
-                    <Tab label="Events" value="0" />
-                    <Tab label="Files" value="1" />
-                  </TabList>
-                </Box>
-
-                <TabPanel value="0">
-                  <DisplayEvents images={images} directoryName={directory} setEventsParent={setEventsParent}  />
-                </TabPanel>
-
-                <TabPanel value="1">
-                  <DisplayFiles directoryName={directory}  />
-                </TabPanel>
-
-              </TabContext>
-            </Box>
-          </Box>
-      </Grid> */}
     </>
   );
 };

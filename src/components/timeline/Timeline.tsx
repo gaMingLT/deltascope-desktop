@@ -40,13 +40,21 @@ const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
   }
 
   const addToTimeline = (element: string) => {
-    let res = false
-    Object.keys(selectedEventsTimeline).map((key: string) => {
+    let res = false 
+
+    for (const key in selectedEventsTimeline) {
       const temp= selectedEventsTimeline as any;
       if (element == key) {
         res = temp[key]
       } 
-    })
+    }
+
+    // Object.keys(selectedEventsTimeline).map((key: string) => {
+    //   const temp= selectedEventsTimeline as any;
+    //   if (element == key) {
+    //     res = temp[key]
+    //   } 
+    // })
     return res;
   }
 
@@ -140,7 +148,7 @@ const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
     <>
       <Grid item container xs direction="column" className="px-2 py-2">
         <Grid item>
-          <Box id="visualization" className="border-black border-1 border-solid bg-white m-2 rounded-lg h-80" /* style={{ border: '1px solid black', height: '350px', margin: '1rem', padding: '0.5rem', backgroundColor: "white" }} */>
+          <Box id="visualization" className=" border-black border-1 border-solid bg-white m-2 rounded-lg h-80" /* style={{ border: '1px solid black', height: '350px', margin: '1rem', padding: '0.5rem', backgroundColor: "white" }} */>
           </Box>
         </Grid>
         { /* style={{ backgroundColor: '#42a5f5' }} */ }
@@ -158,32 +166,6 @@ const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
             <h3 className="text-black font-bold" >Created: </h3>
           </div>
         </div>
-        {/* <Grid item container spacing={2} justifyContent={"center"} p={1} width={"max-content"} margin={"auto"}  >
-            <Grid item>
-              <Box style={{ display: 'flex' ,justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', padding: '0.25rem', borderRadius: '5px', cursor: 'pointer'  }} onClick={() => changeEventsShown("modified")} >
-                <h3 className="text-black font-bold" >Modified: </h3>
-                <div style={{ height: '2rem', width: '2rem', backgroundColor: 'rgb(31, 201, 53)', margin: '0.5rem' , borderRadius: '5px' }} ></div>
-              </Box>
-            </Grid>
-            <Grid item>
-            <Box style={{ display: 'flex' ,justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', padding: '0.25rem', borderRadius: '5px', cursor: 'pointer'  }} onClick={() => changeEventsShown("accessed")} >
-                <h3 className="text-black font-bold" >Accessed: </h3>
-                <div style={{ height: '2rem', width: '2rem', backgroundColor: 'rgb(95, 91, 91)', margin: '0.5rem' ,borderRadius: '5px' }} ></div>
-              </Box>
-            </Grid>
-            <Grid item>
-              <Box style={{ display: 'flex' ,justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', padding: '0.25rem', borderRadius: '5px', cursor: 'pointer'  }} onClick={() => changeEventsShown("changed")} >
-                <h3 className="text-black font-bold">Changed: </h3>
-                <div style={{ height: '2rem', width: '2rem', backgroundColor: 'rgb(229, 108, 108)', margin: '0.5rem' ,borderRadius: '5px' }} ></div>
-              </Box>
-            </Grid>
-            <Grid item>
-              <Box style={{ display: 'flex' ,justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', padding: '0.25rem', borderRadius: '5px', cursor: 'pointer'  }} onClick={() => changeEventsShown("created")}  >
-                <h3 className="text-black font-bold">Created: </h3>
-                <div style={{ height: '2rem', width: '2rem', backgroundColor: 'aqua', margin: '0.5rem' ,borderRadius: '5px' }} ></div>
-              </Box>
-            </Grid>
-        </Grid> */}
       </Grid>
     </>
   )

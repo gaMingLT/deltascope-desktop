@@ -1,8 +1,9 @@
-import { Alert, Box, Button, Checkbox, FormControlLabel, FormGroup, Grid, LinearProgress } from "@mui/material";
+import { Alert, Box, Button, Checkbox, FormControlLabel, FormGroup, Grid, LinearProgress, Snackbar } from "@mui/material";
 import { invoke } from '@tauri-apps/api/tauri'
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { listen } from '@tauri-apps/api/event'
 
-type ResponseType = { directory_path: String, images: Array<String> }
+type ResponseType = { directory_path: string, images: Array<string> }
 
 export default function ImageActions({
   setParentDirectoryName,
@@ -13,18 +14,57 @@ export default function ImageActions({
 }) {
   const [availableImages, setAvailableImages] = useState<Array<string>>([]);
   const [selectedImagesCheckBox, setSelectedImagesCheckBox] = useState<{[index: string]: boolean}>({});
-  // const [selectedImages, setSelectedImages] = useState<Array<string>>([]);
 
   const [cleanedStorage, setCleanedStorage] = useState<boolean>(false);
+
+  const [openMessage, setOpenMessage] = useState(false);
+  const [openErrorMessage, setOpenErrorMessage] = useState(false);
+
+  const handleMessage = () => {
+    setOpenMessage(true);
+  };
+
+  const handleErrorMessage = () => {
+    setOpenErrorMessage(true);
+  };
+
+  const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenMessage(false);
+    setOpenErrorMessage(false);
+  };
+
+  const mountID = useRef(null);
+  const unlistens = useRef<{[index: string]: any}>({});
 
   useEffect(() => {
     if (!cleanedStorage) {
       localStorage.setItem("selectedImages", JSON.stringify([]));
       setCleanedStorage(true);
     }
-  })
+
+    const thisMountID = Math.random();
+    (mountID.current as unknown as number) = thisMountID;
   
-  const [ErrorMessage, setDeltaError] = useState<string>("");
+   listen('delta_finished', (event) => {
+    if (mountID.current != thisMountID) {
+      unlistens.current[thisMountID]();
+    }
+    else {
+      setMessage("Deltaing Images Succesfull!");
+      handleMessage();
+    }}).then(new_unlisten => { unlistens.current[thisMountID] = new_unlisten});
+  
+    return () => {
+      mountID.current = null;
+    };
+  }, []);
+
+  
+  const [errorMessage, setDeltaError] = useState<string>("");
   const [message, setMessage] = useState<string>("");
   const [displayLoading, setDisplayLoading] = useState<boolean>(false);
 
@@ -54,15 +94,6 @@ export default function ImageActions({
       return temp;
     })
     
-    // setSelectedImages((selectedImages) => {
-    //   if (selectedImages.includes(image)) {
-    //     const imagesArray = selectedImages.filter((name) => image !== name);
-    //     return imagesArray;
-    //   } else {
-    //     console.log("In here: else", image, ...selectedImages);
-    //     return [...selectedImages, image];
-    //   }
-    // });
     const images_storage = JSON.parse(localStorage.getItem("selectedImages") as string) as Array<String>;
 
     if (images_storage) {
@@ -85,81 +116,99 @@ export default function ImageActions({
     const selectedImages = JSON.parse(localStorage.getItem("selectedImages") as string) as Array<String>;
     if (selectedImages.length != 2) {
       setDeltaError("Unable to initiate delta - amount of selected imgaes not supported (must be exactly 2)");
-      setTimeout(() => setDeltaError(""), 5000);
+      handleErrorMessage();
     }
     else {
-      const data = { images: selectedImages, directoryNames: "" };
 
       setDisplayLoading(true);
 
       invoke('initiate_delta', { images: selectedImages, directoryName: "" })
       .then(async (res: any) => {
-        // setParentDirectoryName(res.directory_path);
-        // setImages(res.images);
         localStorage.setItem("selectedDeltaImages", JSON.stringify(res.images));
         localStorage.setItem("directoryPath", JSON.stringify(res.directory_path));
-        setMessage('Deltaing images - succesfully');
-        setTimeout(() => setMessage(''), 5000);
         setDisplayLoading(false); 
       })
       .catch((e) => {
         setDeltaError(`Error: ${e}!`);
-        setTimeout(() => setDeltaError(''), 5000);
+        handleErrorMessage();
         setDisplayLoading(false);
       })
     }
-
-    // setDisplayLoading(false);
   }
 
   return (
     <>
-      <Grid item xs={3} className="py-2 px-2">
-        <div className="flex flex-col w-max justify-between gap-5 px-2 py-1.5">
-          {
-            availableImages.map((element: string,index: number) => {
-              return (
-                <FormGroup key={crypto.randomUUID()} className="px-2 py-2 w-max bg-slate-800 text-lg rounded-md">
-                  <FormControlLabel control={<Checkbox checked={selectedImagesCheckBox[element]} onChange={handleChange} inputProps={{ "data-name": parsePathImage(element) } as any} />}  label={parsePathImage(element)} />
-                </FormGroup>
-              )
-            })
-          }
+      <Grid item xs={3} className="flex flex-col py-2 px-2 h-full bg-slate-400 rounded-sm">
+        <div className="flex flex-col w-max justify-between gap-5 px-2 py-1.5 h-2/4 overflow-y-auto overscroll-y-contain rounded-sm">
+          {availableImages.map((element: string, index: number) => {
+            return (
+              <FormGroup
+                key={crypto.randomUUID()}
+                className="px-2 py-2 w-max bg-slate-800 text-lg rounded-md"
+              >
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={selectedImagesCheckBox[element]}
+                      onChange={handleChange}
+                      inputProps={
+                        { "data-name": parsePathImage(element) } as any
+                      }
+                    />
+                  }
+                  label={parsePathImage(element)}
+                />
+              </FormGroup>
+            );
+          })}
         </div>
-        <div>
-          <div className="flex flex-col gap-3 w-max justify-between">
-            <Button variant="contained" onClick={loadAvailableImages} onLoad={loadAvailableImages} className="bg-slate-800 w-100 hover:bg-gray-600" >Get Available Images</Button>
-            <Button variant="contained" onClick={initiateDelta} className="bg-slate-800 w-100  hover:bg-gray-600" >Initiate Delta</Button> 
+        <div className="mb-4 mt-auto w-full h-max align-bottom">
+          <div className="flex flex-col gap-3 w-full justify-between bottom-5">
+            <Button
+              variant="contained"
+              onClick={loadAvailableImages}
+              onLoad={loadAvailableImages}
+              className="bg-slate-800 w-100 hover:bg-gray-600"
+            >
+              Get Available Images
+            </Button>
+            <Button
+              variant="contained"
+              onClick={initiateDelta}
+              className="bg-slate-800 w-100  hover:bg-gray-600"
+            >
+              Initiate Delta
+            </Button>
           </div>
           <div>
             <Box>
-              {ErrorMessage ? (
-                <Alert className="mt-5 w-max" severity="error">
-                  {ErrorMessage}
+              <Snackbar open={openErrorMessage} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+                  {errorMessage}
                 </Alert>
+              </Snackbar>
+            </Box>
+            <Box>
+              <Snackbar open={openMessage} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                  {message}
+                </Alert>
+              </Snackbar>
+            </Box>
+            <Box bgcolor="white" className="mt-4">
+              {displayLoading ? (
+                // TODO: Make size not fixed
+                <LinearProgress
+                  className="rounded-md w-52 mx-auto"
+                  color="secondary"
+                />
               ) : (
                 ""
               )}
             </Box>
-            <Box>
-                {message ? (
-                  <Alert className="mt-5 w-max" severity="success">
-                    {message}
-                  </Alert>
-                ) : (
-                  ""
-                )}
-              </Box>
-              <Box bgcolor="white" className="mt-4">
-                {displayLoading ? (
-                  // TODO: Make size not fixed
-                  <LinearProgress className="rounded-md w-52 mx-auto" color="secondary" />
-                ) : ("")
-                }
-              </Box>
           </div>
         </div>
       </Grid>
     </>
-  )
+  );
 }

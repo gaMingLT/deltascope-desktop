@@ -3,7 +3,7 @@ import {
   Alert,
   Box,
   Button,
-  Grid,
+  Snackbar,
   Tab,
 } from "@mui/material";
 import TabContext from "@mui/lab/TabContext";
@@ -45,10 +45,9 @@ const EventsAction = ({
     base: new Array(),
     next: new Array(),
   });
-  // const [eventsSet, setEventsSet] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const [displayError, setDisplayErrorMessage] = useState<boolean>(false);
-  const [displaySelectedRow, setDisplaySelectedRow] = useState("");
+  // const [displaySelectedRow, setDisplaySelectedRow] = useState("");
+  const [openErrorMessage, setOpenErrorMessage] = useState(false);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -57,7 +56,7 @@ const EventsAction = ({
 
   const handleRowClick: GridEventListener<'rowClick'> = (params) => {
     console.log('Params: ', params)
-    setDisplaySelectedRow(params.row.name);
+    // setDisplaySelectedRow(params.row.name);
   };
 
   const getActivity = (mActivity: string, aActivity: string, cActivity: string, bActivity: string) => {
@@ -98,16 +97,12 @@ const EventsAction = ({
       next: new Array(),
     };
 
-    // events.forEach((key: string) => {
-      
-    // });
-    
-    Object.keys(events).map((key: string) => {
-
-      const eventsType = events[key]
+    for (const key in events) {
+      const eventsType = events[key];
 
       let idCounter = 0;
       let previousDate = "";
+
       eventsType.forEach((element: any) => {
         
         let itemToAdd: any = {
@@ -141,12 +136,22 @@ const EventsAction = ({
         
         idCounter++;
       })
-
-        // setEventsSet(true)
-    })
+    }
 
     setEvents(tempEventsData)
   }
+
+  const handleErrorMessage = () => {
+    setOpenErrorMessage(true);
+  };
+
+  const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenErrorMessage(false);
+  };
 
   const getEvents = () => {
     console.log("Events");
@@ -156,20 +161,19 @@ const EventsAction = ({
 
     if (!images_storage || images_storage.length != 2 || !directoryPath) {
       setErrorMessage(`Images & Path not set!`);
+      handleErrorMessage();
       return;
     }
 
     invoke('get_events_images', { images: images_storage, directoryPath: directoryPath })
-        .then(async (data: any) => {
-          console.log("Data: ", data);
-          
+        .then(async (data: any) => {          
           setEventsParent(data)
           eventsToTable(data);
         })
       .catch((e) => {
         console.log('Error: ', e);
         setErrorMessage(`Unable to retrieve events: ${e.message}`);
-        setTimeout(() => setErrorMessage(""), 5000);
+        handleErrorMessage();
       });
   };
 
@@ -185,18 +189,18 @@ const EventsAction = ({
             </Button>            
           </div>
           <div>
-            {errorMessage ? (
-              <Alert className="mt-4 w-max mr-auto" severity="error">
-                {errorMessage}
-              </Alert>
-            ) : (
-              ""
-            )}
+            <Box>
+              <Snackbar open={openErrorMessage} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+                  {errorMessage}
+                </Alert>
+              </Snackbar>
+            </Box>
           </div>
         </div>
         <div className="w-11/12">
           <TabContext value={value.toString()}>
-            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <Box className="bg-slate-400"  sx={{ borderBottom: 1, borderColor: "divider" }}>
               <TabList
                 onChange={handleChange}
                 aria-label="lab API tabs example"
@@ -242,102 +246,7 @@ const EventsAction = ({
 
           </TabContext>
         </div>
-        {/* <div>
-          <div>
-            <Button variant="contained" className="m-2 bg-slate-800" onClick={getEvents}>
-              Get Events
-            </Button>            
-          </div>
-          <div>
-            {errorMessage ? (
-              <Alert className="mt-4 w-max mr-auto" severity="error">
-                {errorMessage}
-              </Alert>
-            ) : (
-              ""
-            )}
-          </div>
-        </div> */}
       </div>
-      {/* <Grid container spacing="2" direction="column">
-        <Grid item>
-        <TabContext value={value.toString()}>
-                <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-                  <TabList
-                    onChange={handleChange}
-                    aria-label="lab API tabs example"
-                  >
-                    <Tab label="Delta's" value="0" />
-                    <Tab label="Base Image" value="1" />
-                    <Tab label="Next Image" value="2" />
-                  </TabList>
-                </Box>
-
-                <TabPanel value="0">
-                  <Box height={'350px'} width='100%'>
-                    <DataGrid
-                      onRowClick={handleRowClick}
-                      sx={{ fontSize: "1.2rem" }}
-                      rows={events.delta}
-                      columns={columns}
-                    />                    
-                  </Box>
-                </TabPanel>
-
-                <TabPanel value="1">
-                  <Box height={'350px'}  width='100%'>
-                    <DataGrid
-                        onRowClick={handleRowClick}
-                        sx={{ fontSize: "1.2rem" }}
-                        rows={events.base}
-                        columns={columns}
-                      />                    
-                  </Box>
-                </TabPanel>
-
-                <TabPanel value="2">
-                  <Box height={'350px'}  width='100%'>
-                    <DataGrid
-                        onRowClick={handleRowClick}
-                        sx={{ fontSize: "1.2rem" }}
-                        rows={events.next}
-                        columns={columns}
-                      />                    
-                  </Box>
-                </TabPanel>
-
-              </TabContext>
-        </Grid>
-        <Grid item>
-          <Grid item>
-            { displaySelectedRow ? 
-                <Box style={{ padding: '0.5rem', fontSize: '1.25rem' }} >
-                  <p><strong>Path: </strong> {displaySelectedRow}</p>
-                </Box> : ''
-            }
-          </Grid>
-        </Grid>
-        <Grid item container spacing="2" direction="column">
-          <Grid item>
-            <Box>
-              <Button variant="contained" sx={{ margin: "1rem" }} onClick={getEvents}>
-                Get Events
-              </Button> 
-            </Box>
-          </Grid>
-          <Grid item>
-            <Box>
-              {displayError ? (
-                <Alert sx={{ marginTop: "1rem" }} severity="error">
-                  {ErrorMessage}
-                </Alert>
-              ) : (
-                ""
-              )}
-            </Box>
-          </Grid>
-        </Grid>       
-      </Grid> */}
     </>
   );
 };

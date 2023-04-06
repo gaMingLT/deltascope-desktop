@@ -23,26 +23,29 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="h-screen bg-slate-600">
-        <Grid container >
-          <Grid item xs={12}>
-              <div>
-                <h1 className="text-3xl px-2 py-2 font-mono text-center" >Deltascope</h1>
-              </div>          
+        <Grid className="flex flex-col h-full gap-4">
+          <Grid container >
+            <Grid item xs={12}>
+                <div>
+                  <h1 className="text-3xl px-2 py-2 font-mono text-center" >Deltascope</h1>
+                </div>          
+            </Grid>
+            <Grid item container>
+              <OutputDirectory />
+              <DisplaySelectedImages />
+              <Routes />
+            </Grid>
           </Grid>
-          <Grid item container>
-            <OutputDirectory />
-            <DisplaySelectedImages />
-            <Routes />
-          </Grid>
+          <Grid>
+            <div>
+              <DisplayTimeline eventsData={eventsParent} />
+            </div>
+            <div>
+              <EventsAction images={[""]} directoryName={directoryName} setEventsParent={setEventsParent}  />
+            </div>
+          </Grid>          
         </Grid>
-        <Grid>
-        <div>
-          <DisplayTimeline eventsData={eventsParent} />
-        </div>
-        <div>
-          <EventsAction images={[""]} directoryName={directoryName} setEventsParent={setEventsParent}  />
-        </div>
-      </Grid>
+
       </main>
     </>
   )
