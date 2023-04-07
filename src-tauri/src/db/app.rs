@@ -1,21 +1,19 @@
 use std::path::PathBuf;
-
 use sqlx::{Pool, Sqlite, Row};
-
 
 pub async fn update_path_output_dir(path: PathBuf, conn: Pool<Sqlite>) {
   println!("Updating outhpath directory: {:?}", path);
 
   let delete_query = format!("DELETE FROM output_dir");
-  let res = sqlx::query(delete_query.as_str())
+  sqlx::query(delete_query.as_str())
     .execute(&conn)
-    .await;
+    .await.unwrap();
 
   let query = format!("INSERT INTO output_dir VALUES(?)");
-    let res = sqlx::query(query.as_str())
+    sqlx::query(query.as_str())
         .bind(path.into_os_string().into_string().unwrap())
         .execute(&conn)
-        .await;
+        .await.unwrap();
 
   // Ok(())
 }

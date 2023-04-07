@@ -1,10 +1,9 @@
-use sqlx::{Pool, Sqlite, Row};
+use sqlx::{Pool, Sqlite};
 use crate::tools::mactime::MacTimeLine;
-
 
 //   res = cur.execute("SELECT json_group_array(json_object('Date', date,  'Size', size, 'mActivity',  mActivity, 'aActivity',  aActivity,'cActivity',  cActivity,'bActivity',  bActivity,'FileType',  fileType,'OwnerPerm', ownerPerm,'GroupPerm', groupPerm,'OtherPerm', otherPerm,'UUID', uid,'GUID', guid,'Inode', inode, 'Path', name)) FROM (SELECT * From {0}_events where date like '%{1}%' order by date desc limit 200) ".format(name, year))
 pub async fn get_events_json(name: String, conn: Pool<Sqlite>) -> Result<Vec<MacTimeLine>, ()> {
-  println!("Retrieving events values from: {}", name);
+  log::info!("Retrieving events values from: {}", name);
   let new_name = name.replace("-","_");
 
   let query = format!("SELECT * FROM {new_name}_events LIMIT 1000");
@@ -15,13 +14,12 @@ pub async fn get_events_json(name: String, conn: Pool<Sqlite>) -> Result<Vec<Mac
     parsed_rows.push(MacTimeLine::try_from(row).unwrap());
   }
 
-
   Ok(parsed_rows)
 }
 
   //   res = cur.execute("SELECT json_group_array(json_object('Date', date,  'Size', size, 'mActivity',  mActivity, 'aActivity',  aActivity,'cActivity',  cActivity,'bActivity',  bActivity,'FileType',  fileType,'OwnerPerm', ownerPerm,'GroupPerm', groupPerm,'OtherPerm', otherPerm,'UUID', uid,'GUID', guid,'Inode', inode, 'Path', name)) FROM (SELECT * FROM {0}_events where date not in (SELECT date from {1}_events) order by date desc limit 200)".format(next, base))
 pub async fn get_events_delta(base_name: String, next_name: String, conn: Pool<Sqlite>) -> Result<Vec<MacTimeLine>, ()> {
-  println!("Retrieving delta's between images: {} & {}", base_name, next_name);
+  log::info!("Retrieving delta's between images: {} & {}", base_name, next_name);
   let new_base_name = base_name.replace("-","_");
   let new_next_name = next_name.replace("-", "_");
 

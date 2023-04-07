@@ -1,10 +1,9 @@
 import { Box, Grid } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Timeline } from "vis-timeline";
-// import "vis-timeline/styles/vis-timeline-graph2d.css";
 
 const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
-  const [timeLineLoaded, setTimeLineLoaded] = useState<boolean>(false)
+  // const [timeLineLoaded, setTimeLineLoaded] = useState<boolean>(false)
   const [selectedEventsTimeline, setSelectedEventsTimeline] = useState<{ modified: boolean, accessed: boolean, changed: boolean, created: boolean }>(
     {
       "modified": true,
@@ -14,12 +13,12 @@ const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
     }
   );
 
-  useEffect(() => { 
-    if (!timeLineLoaded && eventsData) {
-      createTimeline()
-      setTimeLineLoaded(true)
-    }
-  })
+  // useEffect(() => { 
+  //   if (!timeLineLoaded && eventsData) {
+  //     createTimeline()
+  //     setTimeLineLoaded(true)
+  //   }
+  // }, [timeLineLoaded, eventsData])
 
   const changeEventsShown = (type: string) => {
     switch(type) {

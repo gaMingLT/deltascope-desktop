@@ -1,15 +1,16 @@
 use std::io::{BufRead, Write, BufReader };
-use std::path::{PathBuf, self, Path};
+use std::path::{PathBuf, Path};
 use std::{fs, vec};
 use std::fs::File;
 use std::fs::OpenOptions;
 
 pub fn get_stored_paths_file() -> Result<Vec<String>, ()>  {
+  log::info!("Getting stored paths form file");
   if !Path::new("paths.txt").exists() {
     let empty: Vec<String> = vec![];
     return Ok(empty)
   }
-  let mut f = File::open("paths.txt").unwrap();
+  let f = File::open("paths.txt").unwrap();
   let lines = BufReader::new(f).lines();
 
   let stored_paths = lines
@@ -21,8 +22,8 @@ pub fn get_stored_paths_file() -> Result<Vec<String>, ()>  {
 }
 
 pub fn store_paths_file(image_path: PathBuf) -> Result<(),()> {
-  // let mut stored_paths = get_stored_paths_file().unwrap();
-  let mut f = OpenOptions::new().create(true).append(true).open("paths.txt");
+  log::info!("Storing new paths in file.");
+  let f = OpenOptions::new().create(true).append(true).open("paths.txt");
 
   let line = format!("{}", image_path.into_os_string().into_string().unwrap());
   writeln!(f.as_ref().unwrap(), "{}", line).unwrap();
@@ -31,6 +32,7 @@ pub fn store_paths_file(image_path: PathBuf) -> Result<(),()> {
 }
 
 pub fn get_path_image_from_name(name: String) -> Result<String, ()> {
+  log::info!("Retrieving path from image name.");
   let stored_paths = get_stored_paths_file().unwrap();
 
   let image_path = stored_paths.into_iter().filter(|f| f.contains(&name)).collect::<String>();
@@ -42,6 +44,7 @@ pub fn get_path_image_from_name(name: String) -> Result<String, ()> {
 // TODO: Add way to delete selecting file paths!
 
 pub fn delete_images(images: Vec<String>) {
+  log::info!("Deleting images paths from file storage");
   let stored_paths = get_stored_paths_file().unwrap();
   let mut new_stored_paths = vec![];
 

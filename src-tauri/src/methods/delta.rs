@@ -7,7 +7,7 @@ use crate::db::file_db::get_path_image_from_name;
 use crate::db::files::input_values_files;
 use crate::db::tables::{create_events_table, create_files_table};
 use crate::tools::mactime::{execute_mactime, parse_mactime_lines, execute_mactime_wls ,MacTimeLine};
-use crate::tools::rsfls::{execute_fls, parse_fls_file, parse_fls_lines, execute_fls_wsl};
+use crate::tools::rsfls::{execute_fls, parse_fls_lines, execute_fls_wsl};
 
 pub async fn delta_images(
     out_path: String,
@@ -15,7 +15,7 @@ pub async fn delta_images(
     directory_name: String,
     use_wls: bool
 ) -> Result<(), ()> {
-    println!("Delating two images!");
+    log::info!("Delating two images!");
     // println!("Images: {:?}", images);
     // println!("Directory: {}", directory_name);
 
@@ -51,26 +51,26 @@ pub async fn delta_images(
 
     // Before 32s
     // Now 28.XXs when using scn-1-nginx-chance - but database locked issue!
-    println!("Elapsed: {:?}", start.elapsed());
+    log::info!("Elapsed: {:?}", start.elapsed());
 
     Ok(())
 }
 
 async fn retrieve_info_image(out_path: String, name: String, use_wls: bool) -> Result<(), ()> {
-    println!("Deltaing images with name: {}", name);
+    log::info!("Deltaing images with name: {}", name);
 
     // Connect to database
     let conn = db_con(out_path.clone()).await.unwrap();
 
     sqlx::query("pragma temp_store = memory;")
         .execute(&conn)
-        .await;
+        .await.unwrap();
     sqlx::query("pragma mmap_size = 30000000000;")
         .execute(&conn)
-        .await;
+        .await.unwrap();
     sqlx::query("pragma page_size = 4096;")
         .execute(&conn)
-        .await;
+        .await.unwrap();
 
     // Create tables
     // - Create files table
@@ -83,7 +83,7 @@ async fn retrieve_info_image(out_path: String, name: String, use_wls: bool) -> R
     // - Execute FLS
     let image_path = get_path_image_from_name(name.clone()).unwrap();
 
-    let mut lines ;
+    let lines;
 
     if use_wls {
         lines = execute_fls_wsl(image_path, out_path.clone(), name.clone()).await.unwrap();
@@ -124,7 +124,7 @@ async fn retrieve_info_image(out_path: String, name: String, use_wls: bool) -> R
 
     conn.close().await;
 
-    println!("Finishing retrieving info from image: {}", name);
+    log::info!("Finishing retrieving info from image: {}", name);
 
     Ok(())
 }
@@ -193,104 +193,3 @@ pub async fn get_events_images(
 
     Ok((base_events, next_events, delta_events))
 }
-
-// def retrieve_info_image(outPath, iterable: str):
-//   path = iterable
-
-//   dbCon = database_con(outPath)
-//   image_info(path=path)
-//   bodyFilePath = execute_fls(imagePath=path, out=outPath)
-//   name = (bodyFilePath.split('/')[-1].split('.')[0]).replace('-','_')
-
-//   create_files_table(name=name, con=dbCon)
-//   fileData = parse_fls_body_file(filePath=bodyFilePath, out=outPath)
-//   input_values_files(name=name, values=fileData, con=dbCon)
-
-//   # Timeline creation
-//   create_timeline_image_table_2(name=name, con=dbCon)
-
-//   # Create timeline files
-//   execute_mactime(name=name, out=outPath)
-
-//   # Filtering mac timeline file:
-//   filter_mactime_file(name=name, out=outPath)
-
-//   # Parse timelines file
-//   timelineData = parse_mactime_file(name=name, out=outPath)
-
-//   # Add data to database file
-//   input_values_events_2(name=name, values=timelineData, con=dbCon)
-
-//   # dbCon.close()
-
-//   # Events 2.0? -
-//   # load_database_from_image(imagePath=path, out=outPath)
-//   # dbConLoaded = database_con_loaddb(filePath=path, outPath=outPath)
-
-//   # create_loaddb_events_table(name=name, con=dbCon)
-
-//   # eventsLoadeddb = get_events_loaddb(name='', con=dbConLoaded)
-//   # input_values_contentdb(name=name, values=eventsLoadeddb, con=dbCon)
-
-//   # dbCon.close
-
-//   return name
-
-// def delta_image_web(paths: list[str], images: list[str]):
-//   main_logger.info('Initiating Delta images trough WEB')
-//   start_time = time.time()
-
-//   outPath = prepare_filesystem(paths, out='./output')
-//   tablesNames = []
-
-//   with Pool(2) as p:
-//     res = p.map(partial(retrieve_info_image, outPath), paths)
-
-//   tablesNames = res
-//   print('Finished preprocessing images')
-
-//   print('Execution time', time.time() - start_time, ' Seconds')
-
-//   # Image Differences
-//   dbCon = database_con(outPath)
-//   dataImages = []
-//   for tableName in tablesNames:
-//     fileData = get_files_values_path(name=tableName, path='/etc', con=dbCon)
-//     dataImages.append((tableName, fileData))
-
-//   fileDelta  = compare_hash_path(data=dataImages,con=dbCon)
-//   retrieve_files_from_image(deltas=fileDelta, out=outPath)
-
-//   dbCon.close()
-
-//   return { 'images': images, 'directoryName': outPath }
-
-// def get_events_images(tablesNames: list[str], directoryPath: str):
-//   main_logger.info('[DELTASCOPE] - Retrieving events from images')
-//   dbCon = database_con(path=directoryPath)
-//   baseImageTableName = ()
-//   nextImageTableName = ()
-
-//   newNames = []
-//   for name in tablesNames:
-//     newName = name.replace('.img','').replace('-','_')
-//     newNames.append(newName)
-//     date = get_events_image_values_neariest_date(name=newName, con=dbCon)[0][0]
-
-//     if len(baseImageTableName) == 0:
-//       baseImageTableName = (date, newName)
-//     elif date > baseImageTableName[0]:
-//       nextImageTableName = (date, newName)
-//     elif date < baseImageTableName[0]:
-//       nextImageTableName = baseImageTableName
-//       baseImageTableName = (date, newName)
-//     else:
-//       pass
-
-//   baseEvents = json.loads(get_events_json(baseImageTableName[1], 2023, dbCon)[0][0])[:100]
-//   nextEvents = json.loads(get_events_json(nextImageTableName[1], 2023, dbCon)[0][0])[:100]
-//   deltaEvents = json.loads(get_events_delta(base=baseImageTableName[1], next=nextImageTableName[1], year=2023 ,con=dbCon)[0][0])
-
-//   events = { 'delta': deltaEvents, 'base': baseEvents, 'next': nextEvents }
-
-//   return events

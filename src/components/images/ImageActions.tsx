@@ -61,7 +61,7 @@ export default function ImageActions({
     return () => {
       mountID.current = null;
     };
-  }, []);
+  }, [cleanedStorage]);
 
   const deleteAvailableImages = () => {
     const newImages = [];
