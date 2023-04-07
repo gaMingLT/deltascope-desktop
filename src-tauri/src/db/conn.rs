@@ -1,6 +1,8 @@
 use std::fmt::format;
 
 use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool, Pool};
+use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
+use std::str::FromStr;
 
 pub async fn db_con(path: String) -> Result<Pool<Sqlite>, ()> {
   // const DB_URL: &str = "";
@@ -15,7 +17,9 @@ pub async fn db_con(path: String) -> Result<Pool<Sqlite>, ()> {
       println!("Database already exists");
   }
 
-  let db = SqlitePool::connect(&db_url).await.unwrap();
+  let connection_options = SqliteConnectOptions::from_str(&db_url).unwrap().create_if_missing(true).serialized(false);
+
+  let db = SqlitePool::connect_with(connection_options).await.unwrap();
   println!("Connecting to datbase");
   
 

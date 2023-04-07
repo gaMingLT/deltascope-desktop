@@ -12,7 +12,7 @@ mod db;
 mod methods;
 mod tools;
 
-pub struct OutputDir(Mutex<String>);
+pub struct Settings(Mutex<String>, Mutex<bool>);
 
 fn main() {
 
@@ -44,7 +44,7 @@ fn main() {
             // },
             _ => {}
         })
-        .manage(OutputDir(Default::default()))
+        .manage(Settings(Default::default(), false.into()))
         .invoke_handler(tauri::generate_handler![commands::get_stored_paths, commands::initiate_delta, commands::get_events_images, commands::delete_available_images, commands::get_output_dir])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

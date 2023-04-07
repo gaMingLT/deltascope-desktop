@@ -7,7 +7,7 @@ pub async fn get_events_json(name: String, conn: Pool<Sqlite>) -> Result<Vec<Mac
   println!("Retrieving events values from: {}", name);
   let new_name = name.replace("-","_");
 
-  let query = format!("SELECT * FROM {new_name}_events");
+  let query = format!("SELECT * FROM {new_name}_events LIMIT 1000");
   let res = sqlx::query(&query.as_str()).fetch_all(&conn).await.unwrap();
 
   let mut parsed_rows = Vec::new();

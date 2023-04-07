@@ -1,5 +1,6 @@
 use std::path::{PathBuf};
-use crate::{OutputDir, tools::mactime::MacTimeLine};
+use crate::{ Settings};
+use crate::{tools::mactime::MacTimeLine};
 use crate::db::file_db;
 use crate::db::conn;
 use crate::db::tables::create_output_dir_table;
@@ -7,7 +8,7 @@ use crate::db::app;
 use crate::methods::delta;
 use std::{fs};
 use chrono::prelude::*;
-use tauri::{Window, Manager};
+use tauri::{Window, Manager, State};
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
@@ -50,14 +51,14 @@ pub fn get_stored_paths() -> Result<Vec<String>, ()> {
 
 // Initiate Delta - on selected paths
 #[tauri::command]
-pub async fn initiate_delta(images: Vec<String>, directory_name: String, window: Window) -> Result<DeltaResponse, ErrorResponse> {
+pub async fn initiate_delta(images: Vec<String>, directory_name: String, window: Window, settings: State<'_, Settings>) -> Result<DeltaResponse, ErrorResponse> {
   // let id = Uuid::new_v4();
   let date = Local::now().format("%Y-%m-%d-%H-%M-%S");
   let base_path = format!("output/{date}");
 
   fs::create_dir_all(base_path.clone()).unwrap();
 
-  let res = delta::delta_images(base_path.clone(), images.clone(), directory_name).await;
+  let res = delta::delta_images(base_path.clone(), images.clone(), directory_name,  settings.1.lock().await.clone()).await;
 
 window.emit_all("delta_finished", Payload { message: "Tauri is awesome!".into() }).unwrap();
 
@@ -112,3 +113,11 @@ pub async fn set_output_dir(new_path: PathBuf) -> Result<(), ()>  {
 
   Ok(())
 }
+
+
+// pub async fn set_use_wls(settings: State<'_, Settings>) {
+//   let use_wls = settings.1;
+
+//   settings.1 = !settings.1
+
+// }
