@@ -75,7 +75,6 @@ pub async fn initiate_delta(images: Vec<String>, directory_name: String, window:
 #[tauri::command]
 pub async fn get_events_images(images: Vec<String>, directoryPath: String) -> Result<EventsResponse, ErrorResponse> {
   log::info!("Getting evens from images");
-  // println!("Retrieving events images!: {:?} & {:?} ", images, directoryPath);
 
   if images.is_empty() || directoryPath.is_empty() {
     return Err(ErrorResponse { message: "Supplied values are empty".to_string() })
@@ -89,7 +88,6 @@ pub async fn get_events_images(images: Vec<String>, directoryPath: String) -> Re
 #[tauri::command]
 pub async fn delete_available_images(images: Vec<String>) -> Result<(), ()> {
   log::info!("Deleting image path from available images.");
-  // println!("Deleting selected available images: {:?}", images);
   file_db::delete_images(images);
 
   Ok(())
@@ -98,7 +96,6 @@ pub async fn delete_available_images(images: Vec<String>) -> Result<(), ()> {
 #[tauri::command]
 pub async fn get_output_dir() -> Result<(), ()> {
   log::info!("Retrieving output directory path.");
-  // println!("Getting output directory path");
 
   let conn = conn::db_con_app().await.unwrap();
   app::get_output_path(conn).await.unwrap();

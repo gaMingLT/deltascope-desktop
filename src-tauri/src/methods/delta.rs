@@ -94,14 +94,11 @@ async fn retrieve_info_image(out_path: String, name: String, use_wls: bool) -> R
             .unwrap();
     }
 
-    // - Parse Body File FLS
-    // let parsed_body_file = parse_fls_file(out_path, name.clone()).unwrap();
-
     // - Parse fls lines
     let parsed_files_data = parse_fls_lines(lines).unwrap();
 
     // - FLS Info into database
-    let conn = input_values_files(name.clone(), parsed_files_data, conn.clone())
+    let conn = input_values_files(name.clone(), parsed_files_data, &conn)
         .await
         .unwrap();
 

@@ -48,4 +48,3 @@ pub async fn db_con_app() -> Result<Pool<Sqlite>, ()> {
     
     Ok(db)
   }
-  

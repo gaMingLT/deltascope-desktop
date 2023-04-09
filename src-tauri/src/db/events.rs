@@ -13,38 +13,18 @@ pub async fn input_values_events(name: String, values: Vec<MacTimeLine>, conn: &
   let new_name = name.replace("-","_");
   // let line = values.get(0).unwrap();
 
-  let stream = stream::iter(values);
-  let name_test = new_name.as_bytes().clone();
+  // let stream = stream::iter(values);
+  // let name_test = new_name.as_bytes().clone();
 
   // Isn't faster than iterating over over the vector normally
-  stream.for_each_concurrent(150,
-    |i: MacTimeLine| async move {
-      let line = i;
-      let new_name = String::from_utf8(name_test.clone().to_vec()).unwrap();
-      let query = format!("INSERT INTO {new_name}_events VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-      sqlx::query(query.as_str())
-        .bind(line.date)
-        .bind(line.size.to_string())
-        .bind(line.m_activity.to_string())
-        .bind(line.a_activity)
-        .bind(line.c_activity)
-        .bind(line.b_activity)
-        .bind(line.file_type)
-        .bind(line.owner_perm)
-        .bind(line.group_perm)
-        .bind(line.other_perm)
-        .bind(line.uid.to_string())
-        .bind(line.gid.to_string())
-        .bind(line.inode)
-        .bind(line.name)
-        .execute(conn)
-        .await.unwrap();
-    }
-  ).await;
+  sqlx::query("BEGIN TRANSACTION").execute(conn).await.unwrap();
 
-  // let query = format!("INSERT INTO {new_name}_events VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-  // for line in values.into_iter() {
-  //   let res = sqlx::query(query.as_str())
+  // stream.for_each_concurrent(100,
+  //   |i: MacTimeLine| async move {
+  //     let line = i;
+  //     let new_name = String::from_utf8(name_test.clone().to_vec()).unwrap();
+  //     let query = format!("INSERT INTO {new_name}_events VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+  //     sqlx::query(query.as_str())
   //       .bind(line.date)
   //       .bind(line.size.to_string())
   //       .bind(line.m_activity.to_string())
@@ -60,8 +40,36 @@ pub async fn input_values_events(name: String, values: Vec<MacTimeLine>, conn: &
   //       .bind(line.inode)
   //       .bind(line.name)
   //       .execute(conn)
-  //       .await;
-  // }
+  //       .await.unwrap();
+
+  //   }
+  // ).await;
+
+
+
+  let query = format!("INSERT INTO {new_name}_events VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+  for line in values.into_iter() {
+    let res = sqlx::query(query.as_str())
+        .bind(line.date)
+        .bind(line.size.to_string())
+        .bind(line.m_activity.to_string())
+        .bind(line.a_activity)
+        .bind(line.c_activity)
+        .bind(line.b_activity)
+        .bind(line.file_type)
+        .bind(line.owner_perm)
+        .bind(line.group_perm)
+        .bind(line.other_perm)
+        .bind(line.uid.to_string())
+        .bind(line.gid.to_string())
+        .bind(line.inode)
+        .bind(line.name)
+        .execute(conn)
+        .await;
+  }
+
+  sqlx::query("COMMIT TRANSACTION").execute(conn).await.unwrap();
+
 
   Ok(conn.clone())
 
