@@ -136,6 +136,9 @@ pub async fn get_events_images(
     images: Vec<String>,
     directory_path: String,
 ) -> Result<(Vec<MacTimeLine>, Vec<MacTimeLine>, Vec<MacTimeLine>), String> {
+
+    let start = Instant::now();
+
     let conn = db_con(directory_path.clone()).await.unwrap();
     let mut base_image_info: InfoEvents = InfoEvents {
         image: String::from(""),
@@ -187,6 +190,8 @@ pub async fn get_events_images(
     let delta_events = get_events_delta(base_image_info.image, next_image_info.image, conn)
         .await
         .unwrap();
+
+    log::info!("Elapsed: {:?}", start.elapsed());
 
     Ok((base_events, next_events, delta_events))
 }
