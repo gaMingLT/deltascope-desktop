@@ -90,7 +90,6 @@ const EventsAction = ({
   }
 
   const eventsToTable = (events: any) => {
-    console.log('Events to table!')
     const tempEventsData = {
       delta: new Array(),
       base: new Array(),
@@ -154,10 +153,8 @@ const EventsAction = ({
   };
 
   const getEvents = () => {
-    console.log("Events");
-
-    const images_storage = JSON.parse(localStorage.getItem("selectedDeltaImages") as string) as Array<String>;
-    const directoryPath = JSON.parse(localStorage.getItem("directoryPath") as string) as String;
+    const images_storage = JSON.parse(localStorage.getItem("selectedDeltaImages") as string) as Array<string>;
+    const directoryPath = JSON.parse(localStorage.getItem("directoryPath") as string) as string;
 
     if (!images_storage || images_storage.length != 2 || !directoryPath) {
       setErrorMessage(`Images & Path not set!`);

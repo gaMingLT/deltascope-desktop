@@ -10,7 +10,6 @@ import { useState } from "react";
 
 export default function Home() {
   const [directoryName, setDirectoryName] = useState<string>("");
-  const [selectedImages, setSelectedImages] = useState<Array<string>>([]);
   const [eventsParent, setEventsParent] = useState<any>();
 
 

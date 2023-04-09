@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Timeline } from "vis-timeline";
 
 const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
-  const [timeLineLoaded, setTimeLineLoaded] = useState<boolean>(false)
+  // const [timeLineLoaded, setTimeLineLoaded] = useState<boolean>(false)
   const [selectedEventsTimeline, setSelectedEventsTimeline] = useState<{ modified: boolean, accessed: boolean, changed: boolean, created: boolean }>(
     {
       "modified": true,
@@ -13,12 +13,12 @@ const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
     }
   );
 
-  useEffect(() => { 
-    if (!timeLineLoaded && eventsData) {
-      createTimeline()
-      setTimeLineLoaded(true)
-    }
-  }, [])
+  // useEffect(() => { 
+  //   if (!timeLineLoaded && eventsData) {
+  //     createTimeline()
+  //     setTimeLineLoaded(true)
+  //   }
+  // }, [])
 
   const changeEventsShown = (type: string) => {
     switch(type) {
@@ -48,12 +48,6 @@ const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
       } 
     }
 
-    // Object.keys(selectedEventsTimeline).map((key: string) => {
-    //   const temp= selectedEventsTimeline as any;
-    //   if (element == key) {
-    //     res = temp[key]
-    //   } 
-    // })
     return res;
   }
 
@@ -61,22 +55,13 @@ const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
     const container = document.getElementById("visualization") as HTMLElement;
     container.innerHTML = "";
 
-    const groups = [
-      { content: "Delta", id: "delta", value: 1, className: "delta" },
-    ]
-
     const items: Array<any> = []
     let idCounter = 0;
-    // const events = eventsData["events"]
     const deltaEvents = eventsData.delta;
     deltaEvents.map((element: any) => {
-      // From Path to name
       const path = element.name
-      // // const name = path.split('/')[-1]
-      // console.log("Name: ", path);
       let fileType;
 
-      // from FileType to file_type
       switch(element.file_type[0]) {
         case "-":
           fileType = "Unknown"
@@ -106,19 +91,15 @@ const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
 
       if (element.b_activity != ".") {
         itemToAdd.className = "created"
-        // itemToAdd.className="bg-blue-400";
       }
       else if (element.m_activity != ".")  {
         itemToAdd.className = "modified";
-        // itemToAdd.className="bg-green-400";
       }      
       else if (element.a_activity != ".") {
         itemToAdd.className = "accessed"
-        // itemToAdd.className="bg-gray-400";
       }
       else if (element.c_activity != ".") {
         itemToAdd.className = "changed"
-        // itemToAdd.className="bg-red-400";
       }
 
 
@@ -129,13 +110,13 @@ const DisplayTimeline = ({ eventsData }: { eventsData: any }) => {
 
     })
 
+    console.log("Adding items to timeline", items);
+
     // Configuration for the Timeline
     const options = {
       height: '300px',
       stack: true,
       horizontalScroll: true,
-      // verticalScroll: true, 
-      // zoomKey: 'ctrlKey'
     }
 
     // Create a Timeline

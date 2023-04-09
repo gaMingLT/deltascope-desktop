@@ -2,6 +2,7 @@
 ## Issues
 - Release build CSS all broken
 - Load time /timeline because of package size
+- Timeline isn't loaded on pressing the ``get_events`` button
 
 ## To implement - exists
 - Files
