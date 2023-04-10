@@ -3,9 +3,10 @@
     windows_subsystem = "windows"
 )]
 
+use futures::FutureExt;
 use tauri::api::dialog;
-use tauri::async_runtime::Mutex;
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
+use std::{collections::HashMap, sync::Mutex};
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, Manager};
 
 mod commands;
 mod db;
@@ -44,14 +45,17 @@ fn main() {
                     Some(p) => commands::set_path_image(p).unwrap(),
                     _ => {}
                 });
-            }
-            // "set-output-dir" => {
-            //     dialog::FileDialogBuilder::default()
-            //         .pick_file(|path_buf| match path_buf {
-            //             Some(p) => commands::set_output_dir(p).unwrap(),
-            //             _ => {}
-            //         });
-            // },
+            },
+            "set-output-dir" => {
+                dialog::FileDialogBuilder::default().pick_folder(move |path_buf| match path_buf {
+                        Some(p) => {
+                            let app_handle = event.window().app_handle().clone();
+
+                            commands::set_output_dir(p, event.window().clone(), app_handle.state::<Settings>());
+                        } 
+                        _ => {}
+                    });
+            },
             _ => {}
         })
         .manage(Settings(Default::default(), false.into()))
@@ -60,7 +64,6 @@ fn main() {
             commands::initiate_delta,
             commands::get_events_images,
             commands::delete_available_images,
-            commands::get_output_dir
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

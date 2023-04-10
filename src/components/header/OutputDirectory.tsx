@@ -1,9 +1,8 @@
-import { Button } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
-
+import { useEffect, useState } from "react";
+import { listen } from '@tauri-apps/api/event'
 
 export default function OutputDirectory() {
-  const [outputDirectory, setOutputDirectory] = useState<String>();
+  const [outputDirectory, setOutputDirectory] = useState<string>();
 
   const LoadOutputDirectory = () => {
       const temp = JSON.parse(localStorage.getItem("outputDirectory") as string);
@@ -18,6 +17,11 @@ export default function OutputDirectory() {
 
   useEffect(() => {
     LoadOutputDirectory();
+    listen("output-directory-set", (event: any) => {
+      console.log("Event received!", event.payload);
+      setOutputDirectory(event.payload.path)
+      localStorage.setItem("outputDirectory", JSON.stringify(event.payload.path))
+    })
   })
 
 

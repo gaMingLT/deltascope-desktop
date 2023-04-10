@@ -11,6 +11,11 @@ use chrono::prelude::*;
 use tauri::{Window, Manager, State};
 
 #[derive(Clone, serde::Serialize)]
+struct OutputDirectoryPayload {
+  path: String,
+}
+
+#[derive(Clone, serde::Serialize)]
 struct Payload {
   message: String,
 }
@@ -57,10 +62,12 @@ pub async fn initiate_delta(images: Vec<String>, directory_name: String, window:
   log::info!("Formatting delta images!");
   let date = Local::now().format("%Y-%m-%d-%H-%M-%S");
   let base_path = format!("output/{date}");
+  let use_wls = settings.1.lock().unwrap().clone();
+  log::debug!("Use WLS {}", use_wls);
 
   fs::create_dir_all(base_path.clone()).unwrap();
 
-  delta::delta_images(base_path.clone(), images.clone(), directory_name,  settings.1.lock().await.clone()).await.unwrap();
+  delta::delta_images(base_path.clone(), images.clone(), directory_name,   use_wls).await.unwrap();
   window.emit_all("delta_finished", Payload { message: "Tauri is awesome!".into() }).unwrap();
 
   Ok(DeltaResponse { images: images, directory_path: base_path })
@@ -93,29 +100,26 @@ pub async fn delete_available_images(images: Vec<String>) -> Result<(), ()> {
   Ok(())
 }
 
-#[tauri::command]
-pub async fn get_output_dir() -> Result<(), ()> {
-  log::info!("Retrieving output directory path.");
+// #[tauri::command]
+// pub fn get_output_dir(settings: State<'_, Settings>)  -> Result<String, ()> {
+//   log::info!("Retrieving output directory path.");
 
-  let conn = conn::db_con_app().await.unwrap();
-  app::get_output_path(conn).await.unwrap();
-
-  Ok(())
-}
+//   Ok(settings.0.lock().unwrap().to_string())
+// }
 
 
-pub async fn set_output_dir(new_path: PathBuf) -> Result<(), ()>  {
-  // println!("Setting output directory");
+pub fn set_output_dir(new_path: PathBuf, window: Window ,settings: State<'_, Settings>) -> Result<(), ()>  {
   log::info!("Setting output directory.");
 
-  let mut conn = conn::db_con_app().await.unwrap();
-  conn = create_output_dir_table(conn.clone()).await.unwrap();
+ log::debug!("Output directory state: {}", settings.0.lock().unwrap());
+ log::debug!("Selecte path: {:?}", new_path);
 
-  app::update_path_output_dir(new_path.clone(), conn).await;
+ *settings.0.lock().unwrap() = new_path.to_str().unwrap().to_string();
+
+ window.emit_all("output-directory-set", OutputDirectoryPayload { path: settings.0.lock().unwrap().to_string() } );
 
   Ok(())
 }
-
 
 // pub async fn set_use_wls(settings: State<'_, Settings>) {
 //   let use_wls = settings.1;
