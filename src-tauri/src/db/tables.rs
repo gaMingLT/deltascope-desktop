@@ -17,7 +17,7 @@ pub async fn create_events_table(name: String, conn: Pool<Sqlite>) -> Result<Poo
 pub async fn create_files_table(name: String, conn: Pool<Sqlite>) -> Result<Pool<Sqlite>, ()>  {
   log::info!("Creating files table: {}: ", name);
   let new_name = name.replace("-", "_");
-  let query = format!("CREATE TABLE IF NOT EXISTS {new_name}_files(md5,name,inode,mode_as_string,uid,gid,size,atime,mtime,ctime,crtime);");
+  let query = format!("CREATE TABLE IF NOT EXISTS {new_name}_files(md5,name,inode,mode_as_string,uid INTEGER ,gid INTEGER,size INTEGER,atime INTEGER,mtime INTEGER,ctime INTGER,crtime INTEGER);");
   sqlx::query(query.as_str()).execute(&conn).await.unwrap();
 
   Ok(conn)
