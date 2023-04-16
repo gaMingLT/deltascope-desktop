@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use sqlx::{Pool, Sqlite, Row};
 
 pub async fn update_path_output_dir(path: PathBuf, conn: Pool<Sqlite>) {
-  println!("Updating outhpath directory: {:?}", path);
+  log::debug!("Updating outhpath directory: {:?}", path);
 
   let delete_query = format!("DELETE FROM output_dir");
   sqlx::query(delete_query.as_str())

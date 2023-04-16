@@ -9,22 +9,22 @@ const FileAction = ({ fileBlob }: { fileBlob: string | undefined }) => {
   const monaco = useMonaco();
 
 
-  const loadFile = () => {
-    const reader = new FileReader();
+  // const loadFile = () => {
+  //   const reader = new FileReader();
 
-    reader.addEventListener(
-      "load",
-      () => {
-        setFileContent(reader.result);
-        setEditorContent(reader.result as string);
-      },
-      false
-    );
+  //   reader.addEventListener(
+  //     "load",
+  //     () => {
+  //       setFileContent(reader.result);
+  //       setEditorContent(reader.result as string);
+  //     },
+  //     false
+  //   );
 
-    if (fileBlob) {
-      reader.readAsText(fileBlob);
-    }
-  };
+  //   if (fileBlob) {
+  //     reader.readAsText(fileBlob);
+  //   }
+  // };
 
   useEffect(() => {
     if (fileBlob) {

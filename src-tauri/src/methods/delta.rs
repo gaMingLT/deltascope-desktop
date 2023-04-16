@@ -19,8 +19,6 @@ pub async fn delta_images(
     use_wls: bool,
 ) -> Result<(), ()> {
     log::info!("Delating two images!");
-    // println!("Images: {:?}", images);
-    // println!("Directory: {}", directory_name);
 
     let start = Instant::now();
 
@@ -195,13 +193,10 @@ async fn retrieve_info_image(
 
     let res = get_files(name.clone(), &conn).await.unwrap();
 
-    println!("Length: {}", res.len());
-
     conn.close().await;
 
     log::info!("Finishing retrieving info from image: {}", name);
 
-    // Ok(())
     Ok(res)
 }
 
@@ -299,16 +294,12 @@ pub fn compare_hash_path(
         swap: vec![],
     };
 
-    println!("Len next: {:?}", next_files.len());
-    println!("Base next: {:?}", base_files.len());
-
     let filtered_next = next_files
         .clone()
         .into_iter()
         .filter(|f| f.md5 != String::from("0"))
         .filter(|f| f.mode_as_string.chars().collect::<Vec<char>>().get(0).unwrap().clone() == "r".chars().next().unwrap())
         .collect::<Vec<Bodyfile3Line2>>();
-    println!("Len next new: {:?}", filtered_next.len());
 
     let filtered_base = base_files
         .clone()
@@ -316,7 +307,6 @@ pub fn compare_hash_path(
         .filter(|f| f.md5 != String::from("0"))
         .filter(|f| f.mode_as_string.chars().collect::<Vec<char>>().get(0).unwrap().clone() == "r".chars().next().unwrap())
         .collect::<Vec<Bodyfile3Line2>>();
-    println!("Len next new: {:?}", filtered_base.len());
 
     for next_row in filtered_next.iter() {
         for base_row in filtered_base.iter() {
@@ -329,29 +319,9 @@ pub fn compare_hash_path(
         }
     }
 
-    println!("Differences (same): {:?}", differences.same.len());
-    println!("Differences (modified): {:?}", differences.modified);
-    println!("Differences (moved): {:?}", differences.moved.len());
-
-    // for next_row in next_files.iter() {
-
-    //     for base_row in base_files.iter() {
-    //         // println!("Row: {:?} {:?}    {:?} {:?}", base_row.clone().md5 ,base_row.clone().name, next_row.clone().md5 , next_row.clone().name);
-    //         // println!("Same: {:?}",  next_row.md5 == base_row.md5 && next_row.name == base_row.name);
-    //         // println!("Modified: {:?}",  next_row.md5 != base_row.md5 &&  next_row.name == base_row.name);
-    //         if next_row.md5 == base_row.md5 && next_row.name == base_row.name {
-    //             differences.same.push(next_row.clone());
-    //         }
-    //         else if next_row.md5 == base_row.md5 && next_row.name != base_row.name {
-    //             differences.moved.push(next_row.clone());
-    //         }
-    //         else if next_row.md5 != base_row.md5 &&  next_row.name == base_row.name {
-    //             differences.modified.push(next_row.clone());
-    //         }
-    //     }
-    // }
-
-    // println!("Differences: {:?}", differences.modified);
+    // println!("Differences (same): {:?}", differences.same.len());
+    // println!("Differences (modified): {:?}", differences.modified);
+    // println!("Differences (moved): {:?}", differences.moved.len());
 
     Ok(differences)
 }

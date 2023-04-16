@@ -1,14 +1,14 @@
 import { Alert, Box, Button, Grid, Snackbar } from "@mui/material"
 import { useState } from "react";
 import FileAction from "./FileAction";
-import { invoke } from "@tauri-apps/api";
+import { invoke } from '@tauri-apps/api/tauri'
 
 const FilesAction = ({ directoryName }: {
   directoryName: string;
 }) => { 
 
   const [files, setFiles] = useState<any>([])
-  const [loadedFileContent, setLoadedFileContent] = useState<Blob>();
+  const [loadedFileContent, setLoadedFileContent] = useState<string>();
 
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [openErrorMessage, setOpenErrorMessage] = useState(false);
