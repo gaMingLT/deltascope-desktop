@@ -32,6 +32,7 @@ log = "0.4.17"
 simple_logger = "4.1.0"
 simplelog = "0.12.1"
 
+similar = "2.2.1"
 # tokio-stream = "0.1.12"
 # rayon = "1.7"
 # threadpool = "1.8.1"

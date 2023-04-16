@@ -64,6 +64,7 @@ fn main() {
             commands::initiate_delta,
             commands::get_events_images,
             commands::delete_available_images,
+            commands::get_different_files
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

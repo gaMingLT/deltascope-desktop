@@ -1,4 +1,5 @@
 use std::path::{PathBuf};
+use crate::tools::files::{read_diff_files, DiffFileInfo};
 use crate::{ Settings};
 use crate::{tools::mactime::MacTimeLine};
 use crate::db::file_db;
@@ -127,3 +128,11 @@ pub fn set_output_dir(new_path: PathBuf, window: Window ,settings: State<'_, Set
 //   settings.1 = !settings.1
 
 // }
+
+#[tauri::command]
+pub fn get_different_files(directoryPath: String) -> Result<Vec<DiffFileInfo>, ()> {
+  log::info!("Getting different files content");
+  let res = read_diff_files(directoryPath).unwrap();
+
+  Ok(res)
+}

@@ -10,6 +10,7 @@ use crate::tools::mactime::{
     execute_mactime, execute_mactime_wls, parse_mactime_lines, MacTimeLine,
 };
 use crate::tools::rsfls::{execute_fls, execute_fls_wsl, parse_fls_lines};
+use crate::tools::files::{retrieve_files_image};
 
 pub async fn delta_images(
     out_path: String,
@@ -47,7 +48,7 @@ pub async fn delta_images(
         date: String::from(""),
     };
 
-    for image in images.into_iter() {
+    for image in images.clone().into_iter() {
         let new_image_name = image.split('.').next().unwrap().to_string();
 
         let date = get_events_image_values_neariest_date(new_image_name.clone(), conn.clone())
@@ -87,7 +88,9 @@ pub async fn delta_images(
         }
     }
 
-    compare_hash_path(base_result, next_result).unwrap();
+    let result_files = compare_hash_path(base_result, next_result).unwrap();
+
+    retrieve_files_image(images,  out_path ,result_files);
 
     // let mut handles = Vec::new();
 
@@ -284,7 +287,7 @@ pub struct MappingFiles {
 pub fn compare_hash_path(
     base_files: Vec<Bodyfile3Line2>,
     next_files: Vec<Bodyfile3Line2>,
-) -> Result<(), ()> {
+) -> Result<MappingFiles, ()> {
     log::info!("Comparing hash and path");
 
     let mut differences = MappingFiles {
@@ -296,17 +299,29 @@ pub fn compare_hash_path(
         swap: vec![],
     };
 
-    for next_row in next_files.iter() {
-        
-        for base_row in base_files.iter() {
-            // println!("Row: {:?} {:?}    {:?} {:?}", base_row.clone().md5 ,base_row.clone().name, next_row.clone().md5 , next_row.clone().name);
-            // println!("Same: {:?}",  next_row.md5 == base_row.md5 && next_row.name == base_row.name);
-            // println!("Modified: {:?}",  next_row.md5 != base_row.md5 &&  next_row.name == base_row.name); 
+    println!("Len next: {:?}", next_files.len());
+    println!("Base next: {:?}", base_files.len());
+
+    let filtered_next = next_files
+        .clone()
+        .into_iter()
+        .filter(|f| f.md5 != String::from("0"))
+        .filter(|f| f.mode_as_string.chars().collect::<Vec<char>>().get(0).unwrap().clone() == "r".chars().next().unwrap())
+        .collect::<Vec<Bodyfile3Line2>>();
+    println!("Len next new: {:?}", filtered_next.len());
+
+    let filtered_base = base_files
+        .clone()
+        .into_iter()
+        .filter(|f| f.md5 != String::from("0"))
+        .filter(|f| f.mode_as_string.chars().collect::<Vec<char>>().get(0).unwrap().clone() == "r".chars().next().unwrap())
+        .collect::<Vec<Bodyfile3Line2>>();
+    println!("Len next new: {:?}", filtered_base.len());
+
+    for next_row in filtered_next.iter() {
+        for base_row in filtered_base.iter() {
             if next_row.md5 == base_row.md5 && next_row.name == base_row.name {
                 differences.same.push(next_row.clone());
-            }
-            else if next_row.md5 == base_row.md5 && next_row.name != base_row.name {
-                differences.moved.push(next_row.clone());
             }
             else if next_row.md5 != base_row.md5 &&  next_row.name == base_row.name {
                 differences.modified.push(next_row.clone());
@@ -314,9 +329,31 @@ pub fn compare_hash_path(
         }
     }
 
-    println!("Differences: {:?}", differences.modified);
+    println!("Differences (same): {:?}", differences.same.len());
+    println!("Differences (modified): {:?}", differences.modified);
+    println!("Differences (moved): {:?}", differences.moved.len());
 
-    Ok(())
+    // for next_row in next_files.iter() {
+
+    //     for base_row in base_files.iter() {
+    //         // println!("Row: {:?} {:?}    {:?} {:?}", base_row.clone().md5 ,base_row.clone().name, next_row.clone().md5 , next_row.clone().name);
+    //         // println!("Same: {:?}",  next_row.md5 == base_row.md5 && next_row.name == base_row.name);
+    //         // println!("Modified: {:?}",  next_row.md5 != base_row.md5 &&  next_row.name == base_row.name);
+    //         if next_row.md5 == base_row.md5 && next_row.name == base_row.name {
+    //             differences.same.push(next_row.clone());
+    //         }
+    //         else if next_row.md5 == base_row.md5 && next_row.name != base_row.name {
+    //             differences.moved.push(next_row.clone());
+    //         }
+    //         else if next_row.md5 != base_row.md5 &&  next_row.name == base_row.name {
+    //             differences.modified.push(next_row.clone());
+    //         }
+    //     }
+    // }
+
+    // println!("Differences: {:?}", differences.modified);
+
+    Ok(differences)
 }
 
 // def compare_hash_path(data, con):

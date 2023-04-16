@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import  Editor, { useMonaco } from "@monaco-editor/react";
 
-const FileAction = ({ fileBlob }: { fileBlob: Blob | undefined }) => {
+const FileAction = ({ fileBlob }: { fileBlob: string | undefined }) => {
   const [fileContent, setFileContent] = useState<string | ArrayBuffer | null>(
     ""
   );
@@ -26,13 +26,14 @@ const FileAction = ({ fileBlob }: { fileBlob: Blob | undefined }) => {
     }
   };
 
-  // useEffect(() => {
-  //   if (fileBlob) {
-  //     loadFile()
-  //     setFileSet(true)
-  //   }
-
-  // }, [fileBlob ])
+  useEffect(() => {
+    if (fileBlob) {
+      // loadFile()
+      setEditorContent(fileBlob)
+      setFileContent(fileBlob)
+      setFileSet(true)
+    }
+  })
 
   const setEditorContent = (content: string) => {
     monaco?.editor.getModels()[0]?.setValue(content);

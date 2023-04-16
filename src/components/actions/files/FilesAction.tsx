@@ -1,13 +1,13 @@
 import { Alert, Box, Button, Grid, Snackbar } from "@mui/material"
 import { useState } from "react";
 import FileAction from "./FileAction";
+import { invoke } from "@tauri-apps/api";
 
 const FilesAction = ({ directoryName }: {
   directoryName: string;
 }) => { 
 
-  const [files, setFiles] = useState<any>({})
-  const [directoryPath, setDirectoryName] = useState<string>(directoryName)
+  const [files, setFiles] = useState<any>([])
   const [loadedFileContent, setLoadedFileContent] = useState<Blob>();
 
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -18,35 +18,38 @@ const FilesAction = ({ directoryName }: {
   }
 
   const getFiles = () => {
-    const data = { "directoryName": directoryName };
+    const directoryName = JSON.parse(localStorage.getItem("directoryPath") as string);
 
     if (!directoryName) {
       setErrorMessage("No images selected for comparison");
       handleErrorMessage();
       return;
-    } 
+    }
 
-    fetch("http://localhost:8000/diff/files", {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json",
-      },
+    invoke("get_different_files", { directoryPath: directoryName }).then((e) => {
+      console.log("Result: ", e);
+      setFiles(e);
     })
-      .then(async (e) => {
-        let data = await e.json();
-        console.log("Data: ", data);
-        setFiles(data["diff_files"])
-      })
-      .catch((e) => {
-        setErrorMessage("Unable to retrieve files");
-        handleErrorMessage();
-      });
+    .catch((e) => {
+      console.log("Error: ", e);
+    });
+
   }
 
   const loadFile = (e: any) => {
     const fileName = e.target.getAttribute("data-name");
-    const fileContentString = new Blob(baseToFile(files[fileName]))
+    let fileContentString;
+    files.forEach((element: {name: string, content: string}) => {
+      if (element.name == fileName) {
+        console.log("Test 2: ", element.content);
+        console.log("Test 3: ", baseToFile(element.content))
+        // fileContentString = new Blob(baseToFile(element.content))
+        fileContentString = element.content;
+      }
+    });
+
+    console.log("Test: ", fileContentString);
+
     setLoadedFileContent(fileContentString)
   }
 
@@ -75,15 +78,14 @@ const FilesAction = ({ directoryName }: {
 
         <Grid item className="flex flex-col  w-1/5 h-full bg-slate-400 py-4 px-4 rounded-lg items-center">
           <div className="flex flex-col justify-between px-2 py-2 h-60 overflow-y-auto" >
-            {
-              Object.keys(files).map((key: string, index: number) => {
+            { files.map((element: {name: string, content: string}) => {
                 return (
-                  <div key={crypto.randomUUID()} data-name={key} className="px-2 py-2 cursor-pointer bg-pink-400 rounded-sm" >
-                    {key}
-                  </div>
+                  <div key={crypto.randomUUID()} data-name={element.name} onClick={loadFile} className="px-2 py-2 text-black cursor-pointer bg-pink-400 rounded-sm" >
+                  {element.name}
+                </div> 
                 )
               })
-            } 
+            }
           </div>
 
           <div className="align-bottom w-full">
