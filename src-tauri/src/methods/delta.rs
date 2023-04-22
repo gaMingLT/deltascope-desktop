@@ -1,4 +1,7 @@
+use std::sync::{Arc};
 use std::time::Instant;
+
+use tokio::sync::{Mutex, MutexGuard};
 
 use crate::db::conn::db_con;
 use crate::db::delta::{get_events_delta, get_events_json};
@@ -22,21 +25,58 @@ pub async fn delta_images(
 
     let start = Instant::now();
 
-    let mut info: Vec<(String, Vec<Bodyfile3Line2>)> = vec![];
+    // let mut info: Vec<(String, Vec<Bodyfile3Line2>)> = vec![];
+
+    // for name in images.clone().into_iter() {
+    //     let temp_path = out_path.clone();
+    //     let res = retrieve_info_image(
+    //         temp_path.clone(),
+    //         name.split('.').next().unwrap().to_string(),
+    //         use_wls,
+    //     )
+    //     .await
+    //     .unwrap();
+    //     info.push((name, res));
+    // }
+
+    let mut handles = Vec::new();
+    let mut info2 = Arc::new(Mutex::new(vec![]));
 
     for name in images.clone().into_iter() {
         let temp_path = out_path.clone();
-        let res = retrieve_info_image(
-            temp_path.clone(),
-            name.split('.').next().unwrap().to_string(),
-            use_wls,
-        )
-        .await
-        .unwrap();
-        info.push((name, res));
+        let info2 = info2.clone(); 
+
+        handles.push(tokio::task::spawn(async move {
+            // let temp_path = out_path.clone();
+            let res = retrieve_info_image(
+                temp_path.clone(),
+                name.split('.').next().unwrap().to_string(), use_wls
+            )
+            .await
+            .unwrap();
+
+            info2.lock().await.push((name, res));
+        }));
     }
 
-    let conn = db_con(out_path.clone()).await.unwrap();
+    for handle in handles {
+        let output = handle.await.expect("Execution failed!");
+    }
+
+    log::debug!("Getting results (threading)");
+    let mut new_info = vec![];
+
+    let res = info2.lock().await;
+    // let test = &res.get(0).unwrap().0;
+    // let test2 = &res.get(1).unwrap().0;
+    // println!("Res (threading): {:?} {:?}", test, test2);
+
+    new_info.push(res.get(0).unwrap().clone());
+    new_info.push(res.get(1).unwrap().clone());
+
+    
+    // let conn = Arc::new(Mutex::new(db_con(out_path.clone())));
+    let conn = db_con(out_path.clone()).await.unwrap(); 
     let mut base_image_info: InfoEvents = InfoEvents {
         image: String::from(""),
         date: String::from(""),
@@ -80,7 +120,7 @@ pub async fn delta_images(
     let mut next_result = vec![];
     let mut base_result = vec![];
 
-    for results in info.into_iter() {
+    for results in new_info.into_iter() {
         let new_image_name = results.0.split('.').next().unwrap().to_string();
         if new_image_name == next_image_info.image {
             next_result = results.1;
@@ -95,29 +135,6 @@ pub async fn delta_images(
     let result_files = compare_hash_path(base_result, next_result).unwrap();
 
     retrieve_files_image(images,  out_path ,result_files);
-
-    // let mut handles = Vec::new();
-
-    // for name in images.into_iter() {
-    //     let temp_path = out_path.clone();
-
-    //     // tokio::task::spawn(async move {
-    //     //   retrieve_info_image(temp_path.clone(), name.split('.').next().unwrap().to_string()).await.unwrap();
-    //     // });
-
-    //     handles.push(tokio::task::spawn(async move {
-    //         retrieve_info_image(
-    //             temp_path.clone(),
-    //             name.split('.').next().unwrap().to_string(),
-    //         )
-    //         .await
-    //         .unwrap();
-    //     }));
-    // }
-
-    // for handle in handles {
-    //     let output = handle.await.expect("Execution failed!");
-    // }
 
     // Before 32s
     // Now 28.XXs when using scn-1-nginx-chance - but database locked issue!
@@ -145,6 +162,11 @@ async fn retrieve_info_image(
         .await
         .unwrap();
     sqlx::query("pragma page_size = 4096;")
+        .execute(&conn)
+        .await
+        .unwrap();
+
+    sqlx::query("PRAGMA journal_mode=WAL;")
         .execute(&conn)
         .await
         .unwrap();
@@ -306,11 +328,16 @@ pub fn compare_hash_path(
     log::debug!("Next files (len): {}", next_files.len());
     log::debug!("Base files (len): {}", base_files.len());
 
+    let start = Instant::now(); 
+
     let filtered_next = next_files
         .clone()
         .into_iter()
         .filter(|f| f.md5 != String::from("0"))
         .filter(|f| f.mode_as_string.chars().collect::<Vec<char>>().get(0).unwrap().clone() == "r".chars().next().unwrap())
+        .filter(|f| !f.name.contains("deleted"))
+        .filter(|f| !f.name.contains("/usr/lib"))
+        .filter(|f| !f.name.contains("/usr/bin"))
         .collect::<Vec<Bodyfile3Line2>>();
 
     let filtered_base = base_files
@@ -318,7 +345,14 @@ pub fn compare_hash_path(
         .into_iter()
         .filter(|f| f.md5 != String::from("0"))
         .filter(|f| f.mode_as_string.chars().collect::<Vec<char>>().get(0).unwrap().clone() == "r".chars().next().unwrap())
+        .filter(|f| !f.name.contains("deleted"))
+        .filter(|f| !f.name.contains("/usr/lib"))
+        .filter(|f| !f.name.contains("/usr/bin"))
         .collect::<Vec<Bodyfile3Line2>>();
+
+    log::info!("Elapsed (filter): {:?}", start.elapsed());
+
+    let start = Instant::now();  
 
     for next_row in filtered_next.iter() {
         for base_row in filtered_base.iter() {
@@ -338,6 +372,8 @@ pub fn compare_hash_path(
             }
         }
     }
+
+    log::info!("Elapsed (iterate): {:?}", start.elapsed());
 
     log::debug!("Differences (same): {:?}", differences.same.len());
     log::debug!("Differences (modified): {:?}", differences.modified);

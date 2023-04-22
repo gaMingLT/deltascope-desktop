@@ -3,6 +3,7 @@ use serde::Serialize;
 use similar::{ChangeTag, TextDiff};
 use std::fs::File;
 use std::io::Write;
+use std::path::Path;
 use std::{fs, process::Command};
 
 pub fn retrieve_files_image(images: Vec<String>, out_path: String, files: MappingFiles) {
@@ -10,18 +11,14 @@ pub fn retrieve_files_image(images: Vec<String>, out_path: String, files: Mappin
     fs::create_dir(format!("{out_path}/diff")).unwrap();
 
     // Get files for each image
-    let mut content_retrieved_files: Vec<(String,String, String, String)> = vec![];
+    let mut content_retrieved_files: Vec<(String, String, String, String)> = vec![];
 
     for image in images.iter() {
         for file in files.modified.clone().into_iter() {
             let image_path = get_path_image_from_name(image.clone()).unwrap();
             let inode = file.inode;
-            let file_content = retrieve_file_image(
-                image_path.clone(),
-                file.name,
-                inode.clone(),
-            )
-            .unwrap();
+            let file_content =
+                retrieve_file_image(image_path.clone(), file.name, inode.clone()).unwrap();
 
             let mut exists_already = false;
             let mut value_index: usize = 0;
@@ -40,7 +37,7 @@ pub fn retrieve_files_image(images: Vec<String>, out_path: String, files: Mappin
                 previous_value.3 = file_content;
                 content_retrieved_files.push(previous_value.clone());
             } else {
-                content_retrieved_files.push((image_path,inode, file_content, String::from("")))
+                content_retrieved_files.push((image_path, inode, file_content, String::from("")))
             }
         }
     }
@@ -81,7 +78,7 @@ pub fn retrieve_file_image(
     Ok(str)
 }
 
-pub fn diff_files(files_to_diff: Vec<(String,String, String, String)>, out_path: String) {
+pub fn diff_files(files_to_diff: Vec<(String, String, String, String)>, out_path: String) {
     for file_to_diff in files_to_diff.into_iter() {
         let diff = TextDiff::from_lines(&file_to_diff.2, &file_to_diff.3);
 
@@ -109,25 +106,33 @@ pub fn diff_files(files_to_diff: Vec<(String,String, String, String)>, out_path:
     }
 }
 
-
 #[derive(Debug, Serialize)]
 pub struct DiffFileInfo {
-  name: String,
-  content: String
+    name: String,
+    content: String,
 }
 
 pub fn read_diff_files(out_path: String) -> Result<Vec<DiffFileInfo>, ()> {
-  let path =format!("F:/Howest/2022-2023/Semester 5/140 GIT/thesis/deltascope-client/deltascope/src-tauri/{out_path}/diff");
+    let path = format!("F:/Howest/2022-2023/Semester 5/140 GIT/thesis/deltascope-client/deltascope/src-tauri/{out_path}/diff");
 
-  let paths = fs::read_dir(path).unwrap();
+    let path_exists = Path::new(path.as_str()).exists();
+    if !path_exists {
+        log::error!("Directory diff in output directory does not exist!");
+        return Err(());
+    }
 
-  let mut files: Vec<DiffFileInfo> = Vec::new();
+    let paths = fs::read_dir(path).unwrap();
 
-  for path in paths {
-      let content = fs::read(path.as_ref().unwrap().path()).unwrap();
-      let string_content = String::from_utf8(content).unwrap();
-      files.push(DiffFileInfo { name: path.unwrap().file_name().to_str().unwrap().to_string(), content: string_content } , );
-  }
+    let mut files: Vec<DiffFileInfo> = Vec::new();
 
-  Ok(files)
+    for path in paths {
+        let content = fs::read(path.as_ref().unwrap().path()).unwrap();
+        let string_content = String::from_utf8(content).unwrap();
+        files.push(DiffFileInfo {
+            name: path.unwrap().file_name().to_str().unwrap().to_string(),
+            content: string_content,
+        });
+    }
+
+    Ok(files)
 }
