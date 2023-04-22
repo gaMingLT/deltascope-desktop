@@ -134,5 +134,7 @@ pub fn get_different_files(directoryPath: String) -> Result<Vec<DiffFileInfo>, (
   log::info!("Getting different files content");
   let res = read_diff_files(directoryPath).unwrap();
 
+  log::debug!("Different files: {:?}", res.len());
+
   Ok(res)
 }

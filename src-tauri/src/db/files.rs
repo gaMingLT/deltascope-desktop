@@ -1,3 +1,5 @@
+use std::borrow::BorrowMut;
+
 use bodyfile::Bodyfile3Line;
 use sqlx::{sqlite::SqliteRow, Executor, Pool, Sqlite, Row};
 
@@ -65,7 +67,17 @@ pub async fn get_files(name: String, conn: &Pool<Sqlite>) -> Result<Vec<Bodyfile
     for row in res.into_iter() {
         parsed_rows.push(Bodyfile3Line2 {
             md5: row.try_get::<String, usize>(0).unwrap(),
-            name: row.try_get::<String, usize>(1).unwrap(),
+            // name:  String::from_utf8_lossy(row.try_get::<&str, usize>(1).unwrap().as_bytes()).to_string(),
+            name: {
+               match row.try_get::<String, usize>(1) {
+                    Ok(e) => e,
+                    Err(e) => {
+                        log::error!("{}", e);
+                        String::from("error")
+                    }
+               } 
+
+            },
             inode: row.try_get::<String, usize>(2).unwrap(),
             mode_as_string: row.try_get::<String, usize>(3).unwrap(),
 

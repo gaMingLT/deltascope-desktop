@@ -119,9 +119,9 @@ pub fn execute_mactime(out_path: String, name: String) -> Result<Vec<String>, ()
 pub fn parse_mactime_lines(lines: Vec<String>) -> Result<Vec<MacTimeLine>, ()> {
     let parsed_lines = lines
         .into_iter()
+        .filter(|l| l.split(',').collect::<Vec<&str>>()[0] != "Date")
         .map(|l| {
             let parts: Vec<&str> = l.split(',').collect();
-
             let activities: Vec<char> = parts[2].chars().collect();
             let permissions: Vec<char> = parts[3].chars().collect();
 
@@ -167,12 +167,13 @@ pub async fn execute_mactime_wls(out_path: String, name: String) -> Result<Vec<S
         .arg("-b")
         .arg(format!("{name}.txt"))
         .arg("-d")
+        .arg("-y")
         .output()
         .expect("Failed to execute command"); 
 
     let cmd_stdout = cmd_output.stdout;
 
-    let to_str = String::from_utf8(cmd_stdout.clone()).unwrap();
+    let to_str = unsafe { String::from_utf8_unchecked(cmd_stdout.clone()) };
     let lines = to_str
         .split("\n")
         .into_iter()

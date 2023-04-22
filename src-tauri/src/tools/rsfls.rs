@@ -70,7 +70,7 @@ pub fn parse_fls_file(out_path: String, name: String) -> Result<Vec<String>, ()>
 
 
 pub async fn execute_fls_wsl(image_path: String, out_path: String, name: String) -> Result<Vec<String>, ()> {
-  log::info!("Path: {}", image_path);
+  log::info!("Path (wsl): {}", image_path);
 
   let split: Vec<&str> = image_path.split("\\").collect();
   let image_name = split.get(split.capacity()-1).unwrap();
@@ -95,7 +95,7 @@ pub async fn execute_fls_wsl(image_path: String, out_path: String, name: String)
 
   let cmd_stdout = cmd_output.stdout;
 
-  let to_str = String::from_utf8(cmd_stdout.clone()).unwrap();
+let to_str = unsafe { String::from_utf8_unchecked(cmd_stdout.clone()) };
   let lines = to_str.split("\n").into_iter().map(|f| f.to_string()).filter(|f| f.len() != 0).collect::<Vec<String>>();
 
   let mut file = File::create(format!("{out_path}/{name}.txt")).unwrap();

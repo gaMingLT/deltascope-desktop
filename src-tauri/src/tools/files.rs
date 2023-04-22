@@ -76,7 +76,9 @@ pub fn retrieve_file_image(
 
     let cmd_stdout = cmd_output.stdout;
 
-    Ok(String::from_utf8(cmd_stdout).unwrap())
+    let str = String::from_utf8_lossy(&cmd_stdout).to_string();
+
+    Ok(str)
 }
 
 pub fn diff_files(files_to_diff: Vec<(String,String, String, String)>, out_path: String) {

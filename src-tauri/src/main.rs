@@ -58,7 +58,7 @@ fn main() {
             },
             _ => {}
         })
-        .manage(Settings(Default::default(), false.into()))
+        .manage(Settings(Default::default(), true.into()))
         .invoke_handler(tauri::generate_handler![
             commands::get_stored_paths,
             commands::initiate_delta,

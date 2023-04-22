@@ -74,6 +74,9 @@ pub async fn delta_images(
         }
     }
 
+    log::debug!("Next info: {:?}", next_image_info);
+    log::debug!("Base info: {:?}", base_image_info);
+
     let mut next_result = vec![];
     let mut base_result = vec![];
 
@@ -85,6 +88,9 @@ pub async fn delta_images(
             base_result = results.1;
         }
     }
+
+    log::debug!("Next Result: {:?}", next_result.len());
+    log::debug!("Base result: {:?}", base_result.len());
 
     let result_files = compare_hash_path(base_result, next_result).unwrap();
 
@@ -176,7 +182,8 @@ async fn retrieve_info_image(
 
     // Mactime
     let mactime_lines;
-    // - Execute Mactime
+    
+    //Execute Mactime
     if use_wls {
         mactime_lines = execute_mactime_wls(out_path, name.clone()).await.unwrap();
     } else {
@@ -277,6 +284,7 @@ pub struct MappingFiles {
     pub moved: Vec<Bodyfile3Line2>,
     pub new: Vec<Bodyfile3Line2>,
     pub swap: Vec<Bodyfile3Line2>,
+    pub ignore: Vec<Bodyfile3Line2>,
 }
 
 pub fn compare_hash_path(
@@ -292,7 +300,11 @@ pub fn compare_hash_path(
         moved: vec![],
         new: vec![],
         swap: vec![],
+        ignore: vec![],
     };
+
+    log::debug!("Next files (len): {}", next_files.len());
+    log::debug!("Base files (len): {}", base_files.len());
 
     let filtered_next = next_files
         .clone()
@@ -310,7 +322,15 @@ pub fn compare_hash_path(
 
     for next_row in filtered_next.iter() {
         for base_row in filtered_base.iter() {
-            if next_row.md5 == base_row.md5 && next_row.name == base_row.name {
+            if next_row.name == base_row.name && next_row.name.contains("deleted") {
+                if next_row.name.contains("deleted") {
+                    differences.deleted.push(next_row.clone());
+                }
+                else if next_row.name.contains("/usr/lib/") {
+                    differences.ignore.push(next_row.clone());
+                } 
+            }
+            else if next_row.md5 == base_row.md5 && next_row.name == base_row.name {
                 differences.same.push(next_row.clone());
             }
             else if next_row.md5 != base_row.md5 &&  next_row.name == base_row.name {
@@ -319,9 +339,9 @@ pub fn compare_hash_path(
         }
     }
 
-    // println!("Differences (same): {:?}", differences.same.len());
-    // println!("Differences (modified): {:?}", differences.modified);
-    // println!("Differences (moved): {:?}", differences.moved.len());
+    log::debug!("Differences (same): {:?}", differences.same.len());
+    log::debug!("Differences (modified): {:?}", differences.modified);
+    log::debug!("Differences (moved): {:?}", differences.moved.len());
 
     Ok(differences)
 }
