@@ -1,9 +1,6 @@
-use std::borrow::BorrowMut;
-
 use bodyfile::Bodyfile3Line;
-use sqlx::{sqlite::SqliteRow, Executor, Pool, Sqlite, Row};
+use sqlx::{Pool, Row, Sqlite};
 
-// cur.executemany("INSERT INTO {0}_files VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".format(name.replace('-','_')), values)
 pub async fn input_values_files(
     name: String,
     values: Vec<Bodyfile3Line>,
@@ -39,7 +36,6 @@ pub async fn input_values_files(
     Ok(conn.clone())
 }
 
-
 #[derive(Debug, Clone)]
 pub struct Bodyfile3Line2 {
     pub md5: String,
@@ -55,7 +51,6 @@ pub struct Bodyfile3Line2 {
     pub crtime: i64,
 }
 
-
 pub async fn get_files(name: String, conn: &Pool<Sqlite>) -> Result<Vec<Bodyfile3Line2>, ()> {
     log::info!("Retrieving files values from: {}", name);
     let new_name = name.replace("-", "_");
@@ -69,14 +64,13 @@ pub async fn get_files(name: String, conn: &Pool<Sqlite>) -> Result<Vec<Bodyfile
             md5: row.try_get::<String, usize>(0).unwrap(),
             // name:  String::from_utf8_lossy(row.try_get::<&str, usize>(1).unwrap().as_bytes()).to_string(),
             name: {
-               match row.try_get::<String, usize>(1) {
+                match row.try_get::<String, usize>(1) {
                     Ok(e) => e,
                     Err(e) => {
                         log::error!("{}", e);
                         String::from("error")
                     }
-               } 
-
+                }
             },
             inode: row.try_get::<String, usize>(2).unwrap(),
             mode_as_string: row.try_get::<String, usize>(3).unwrap(),
@@ -95,11 +89,3 @@ pub async fn get_files(name: String, conn: &Pool<Sqlite>) -> Result<Vec<Bodyfile
 
     Ok(parsed_rows)
 }
-
-// pub fn get_files_values() {
-//   // res = cur.execute("SELECT * FROM {0}_files LIMIT 100".format(name))
-// }
-
-// pub fn get_files_values_path() {
-//   // res = cur.execute("SELECT * FROM {0}_files where name like '{1}%' ORDER BY mtime DESC".format(name, path))
-// }

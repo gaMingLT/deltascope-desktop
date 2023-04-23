@@ -1,7 +1,4 @@
-use crate::db::app;
-use crate::db::conn;
 use crate::db::file_db;
-use crate::db::tables::create_output_dir_table;
 use crate::methods::delta;
 use crate::tools::files::{read_diff_files, DiffFileInfo};
 use crate::tools::mactime::MacTimeLine;
@@ -47,7 +44,6 @@ pub fn set_path_image(path: PathBuf) -> Result<(), ()> {
 }
 
 // Store used paths somewhere!
-// Use in react
 #[tauri::command]
 pub fn get_stored_paths() -> Result<Vec<String>, ()> {
     log::info!("Getting stored paths.");
@@ -88,11 +84,6 @@ pub async fn initiate_delta(
     })
 }
 
-// #[tauri::command]
-// pub fn remote_image_from_selection(name_image: String) {
-
-// }
-
 #[tauri::command]
 pub async fn get_events_images(
     images: Vec<String>,
@@ -125,13 +116,6 @@ pub async fn delete_available_images(images: Vec<String>) -> Result<(), ()> {
     Ok(())
 }
 
-// #[tauri::command]
-// pub fn get_output_dir(settings: State<'_, Settings>)  -> Result<String, ()> {
-//   log::info!("Retrieving output directory path.");
-
-//   Ok(settings.0.lock().unwrap().to_string())
-// }
-
 pub fn set_output_dir(
     new_path: PathBuf,
     window: Window,
@@ -144,15 +128,35 @@ pub fn set_output_dir(
 
     *settings.0.lock().unwrap() = new_path.to_str().unwrap().to_string();
 
-    window.emit_all(
-        "output-directory-set",
-        OutputDirectoryPayload {
-            path: settings.0.lock().unwrap().to_string(),
-        },
-    );
+    let _res = window
+        .emit_all(
+            "output-directory-set",
+            OutputDirectoryPayload {
+                path: settings.0.lock().unwrap().to_string(),
+            },
+        )
+        .unwrap();
 
     Ok(())
 }
+
+#[tauri::command]
+pub fn get_different_files(directoryPath: String) -> Result<Vec<DiffFileInfo>, ()> {
+    log::info!("Getting different files content");
+
+    match read_diff_files(directoryPath) {
+        Ok(e) => {
+            log::debug!("Different files: {:?}", e.len());
+            Ok(e)
+        }
+        Err(_) => Err(()),
+    }
+}
+
+// #[tauri::command]
+// pub fn remote_image_from_selection(name_image: String) {
+
+// }
 
 // pub async fn set_use_wls(settings: State<'_, Settings>) {
 //   let use_wls = settings.1;
@@ -161,15 +165,9 @@ pub fn set_output_dir(
 
 // }
 
-#[tauri::command]
-pub fn get_different_files(directoryPath: String) -> Result<Vec<DiffFileInfo>, ()> {
-    log::info!("Getting different files content");
+// #[tauri::command]
+// pub fn get_output_dir(settings: State<'_, Settings>)  -> Result<String, ()> {
+//   log::info!("Retrieving output directory path.");
 
-    match read_diff_files(directoryPath) {
-        Ok(e) => {
-          log::debug!("Different files: {:?}", e.len());
-          Ok(e)
-        },
-        Err(_) => Err(()),
-    }
-}
+//   Ok(settings.0.lock().unwrap().to_string())
+// }

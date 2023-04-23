@@ -1,10 +1,9 @@
 use serde::ser::{Serialize, SerializeStruct, Serializer};
+use sqlx::sqlite::SqliteRow;
+use sqlx::Row;
 use std::fs::File;
 use std::io::Write;
 use std::process::Command;
-use sqlx::Row;
-use sqlx::sqlite::SqliteRow;
-
 
 // #[derive(Clone)]
 pub struct MacTimeLine {
@@ -38,39 +37,38 @@ impl Serialize for MacTimeLine {
         s.serialize_field("c_activity", &self.c_activity)?;
         s.serialize_field("b_activity", &self.b_activity)?;
 
-        s.serialize_field("file_type", &self.file_type)?; 
+        s.serialize_field("file_type", &self.file_type)?;
         s.serialize_field("owner_perm", &self.owner_perm)?;
         s.serialize_field("group_perm", &self.group_perm)?;
         s.serialize_field("other_perm", &self.other_perm)?;
 
-        s.serialize_field("uid", &self.uid)?; 
+        s.serialize_field("uid", &self.uid)?;
         s.serialize_field("gid", &self.gid)?;
         s.serialize_field("inode", &self.inode)?;
-        s.serialize_field("name", &self.name)?; 
+        s.serialize_field("name", &self.name)?;
 
         s.end()
     }
 }
 
-impl TryFrom<SqliteRow> for MacTimeLine{
+impl TryFrom<SqliteRow> for MacTimeLine {
     /// Value should be a sqlite
     fn try_from(row: SqliteRow) -> Result<Self, String> {
         let res = MacTimeLine {
-            date: row.try_get::<String, usize>(0).unwrap(),  
-            size: row.try_get::<u32, usize>(1).unwrap() as u64,  
-            // size: row.try_get::<String, usize>(1).unwrap(),  
+            date: row.try_get::<String, usize>(0).unwrap(),
+            size: row.try_get::<u32, usize>(1).unwrap() as u64,
+            // size: row.try_get::<String, usize>(1).unwrap(),
+            m_activity: row.try_get::<String, usize>(2).unwrap(),
+            a_activity: row.try_get::<String, usize>(3).unwrap(),
+            c_activity: row.try_get::<String, usize>(4).unwrap(),
+            b_activity: row.try_get::<String, usize>(5).unwrap(),
 
-            m_activity: row.try_get::<String, usize>(2).unwrap(), 
-            a_activity: row.try_get::<String, usize>(3).unwrap(), 
-            c_activity: row.try_get::<String, usize>(4).unwrap(), 
-            b_activity: row.try_get::<String, usize>(5).unwrap(), 
-            
             file_type: row.try_get::<String, usize>(6).unwrap(),
             owner_perm: row.try_get::<String, usize>(7).unwrap(),
-            group_perm: row.try_get::<String, usize>(8).unwrap(), 
+            group_perm: row.try_get::<String, usize>(8).unwrap(),
             other_perm: row.try_get::<String, usize>(9).unwrap(),
 
-            uid: row.try_get::<u32, usize>(10).unwrap() as u64, 
+            uid: row.try_get::<u32, usize>(10).unwrap() as u64,
             gid: row.try_get::<u32, usize>(11).unwrap() as u64,
             inode: row.try_get::<String, usize>(12).unwrap(),
             name: row.try_get::<String, usize>(13).unwrap(),
@@ -149,17 +147,13 @@ pub fn parse_mactime_lines(lines: Vec<String>) -> Result<Vec<MacTimeLine>, ()> {
     Ok(parsed_lines)
 }
 
-
-// cmd = "mactime -b {1}/{0}.txt -d > {1}/{2}/tl.{0}.txt".format(name.replace('_','-'), out, 'timelines')
-// res = system(cmd)
-
 pub async fn execute_mactime_wls(out_path: String, name: String) -> Result<Vec<String>, ()> {
     log::info!("Executing mactime (WLS): {}", out_path);
 
     let new_outh_path = out_path.clone().to_string();
 
     let mut base_path = String::from("F:\\Howest\\2022-2023\\Semester 5\\140 GIT\\thesis\\deltascope-client\\deltascope\\src-tauri\\");
-    base_path.push_str(out_path.clone().replace("/", "\\") .as_str());
+    base_path.push_str(out_path.clone().replace("/", "\\").as_str());
 
     let cmd_output = Command::new("wsl")
         .current_dir(out_path)
@@ -169,7 +163,7 @@ pub async fn execute_mactime_wls(out_path: String, name: String) -> Result<Vec<S
         .arg("-d")
         .arg("-y")
         .output()
-        .expect("Failed to execute command"); 
+        .expect("Failed to execute command");
 
     let cmd_stdout = cmd_output.stdout;
 

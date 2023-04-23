@@ -3,10 +3,9 @@
     windows_subsystem = "windows"
 )]
 
-use futures::FutureExt;
+use std::sync::Mutex;
 use tauri::api::dialog;
-use std::{collections::HashMap, sync::Mutex};
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, Manager};
+use tauri::{CustomMenuItem, Manager, Menu, MenuItem, Submenu};
 
 mod commands;
 mod db;
@@ -45,17 +44,22 @@ fn main() {
                     Some(p) => commands::set_path_image(p).unwrap(),
                     _ => {}
                 });
-            },
+            }
             "set-output-dir" => {
                 dialog::FileDialogBuilder::default().pick_folder(move |path_buf| match path_buf {
-                        Some(p) => {
-                            let app_handle = event.window().app_handle().clone();
+                    Some(p) => {
+                        let app_handle = event.window().app_handle().clone();
 
-                            commands::set_output_dir(p, event.window().clone(), app_handle.state::<Settings>());
-                        } 
-                        _ => {}
-                    });
-            },
+                        commands::set_output_dir(
+                            p,
+                            event.window().clone(),
+                            app_handle.state::<Settings>(),
+                        )
+                        .unwrap();
+                    }
+                    _ => {}
+                });
+            }
             _ => {}
         })
         .manage(Settings(Default::default(), true.into()))
