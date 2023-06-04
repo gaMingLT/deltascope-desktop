@@ -1,38 +1,17 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Getting Started
+# Deltascope Dekstop
 
-First, run the development server:
+This repository contains a dekstop based implementation of the original ``Deltascope`` application which can be found [here](https://github.com/gaMingLT/deltascope). 
+This implementation is focused on importing most of the original functionality of the application to the desktop and expanding on it.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+## Reasoning
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The reason for reimplementing the original application in to a Desktop based version is because I wanted to make use of the Rust programming language and the [Tauri](https://tauri.app/) framework. as the original frontend could be 'easily' repurposed as the Tauri framework supports the usage of a Nextjs application as the frontend.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Running
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+The application can be started by installing all the required packages for a Tauri & Reactjs application. With all packages installed the following command can be execute: ``pnpm tauri dev``, which will started dev version of the application.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## Problems
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Currently the application can only be run in dev mode, building the application into a releasable binary results in the css layout not applying correctly. The reason is that the Tauri frameworks requires static HTML files to be present, but this functionality is in a kind of limbo state because of the current update to a new Nextjs 13 version. Some investigation has been performed to identified and rectify the problem but so far without success
