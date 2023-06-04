@@ -1,7 +1,7 @@
 
-# Deltascope Dekstop
+# Deltascope Desktop
 
-This repository contains a dekstop based implementation of the original ``Deltascope`` application which can be found [here](https://github.com/gaMingLT/deltascope). 
+This repository contains a desktop based implementation of the original ``Deltascope`` application which can be found [here](https://github.com/gaMingLT/deltascope). 
 This implementation is focused on importing most of the original functionality of the application to the desktop and expanding on it.
 
 ## Reasoning
